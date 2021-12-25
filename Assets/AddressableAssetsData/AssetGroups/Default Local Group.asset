@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 86e2bbc432b48c542ade7d9c30eeaca4
+  m_SerializeEntries:
+  - m_GUID: d95eece89f7970b4e8e0485695c3e56b
+    m_Address: Assets/images/Reimudot.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c2f21c6f0722b254fa56b990b0f88552
+    m_Address: Assets/images/Marisadot.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ab0bf31dae5215b4a8b8186f32e809a5
+    m_Address: Assets/images/Sanaedot.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1ba928bb3ecbf2d40880331173864333, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 42a65c71f715c3f4ab3bb6da4cc4d2a9, type: 2}
+    - {fileID: 11400000, guid: c971aa99e64e17343b54db3e21afb9b2, type: 2}
