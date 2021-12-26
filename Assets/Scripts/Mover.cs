@@ -3,57 +3,124 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Mover : MonoBehaviour
+/// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
+/// <remarks>
+/// デフォルトでenabledにfalseを設定するため、生成しただけでは更新されない。継承先で「実体化関数」を定義する必要がある。名前を別にしたのは、各クラスで渡すべき引数が異なるため。
+/// </remarks>
+public abstract class Mover
 {
-    [SerializeField]
-    protected SpriteRenderer spriteRenderer;
-    [SerializeField]
-    protected Camera mainCamera;
-    protected float speed;  // 単位：ドット毎フレーム
-    public float Speed { get; set; }
-    protected float angle;  // x軸を基準とした角度。時計回りの方向を正とする。
-    public float Angle
+    protected Transform _transform;
+    protected SpriteRenderer _spriteRenderer;
+    protected float _speed;  // 単位：ドット毎フレーム
+    protected float _angle;  // x軸を基準とした角度。時計回りの方向を正とする。
+    protected uint _damage;  // 衝突時に相手に与えるダメージ。
+    protected int _hitPoint;  // 体力。「消滅」と「撃破」とを区別するために弾でも設定が必須。外部からこれを参照する以外に、OnCollideに返り値を持たせる実装でも良いかもしれない。
+    protected bool _enabled = false;  // パラメータを更新するか否かのフラグ。
+    protected uint _invincibleCounter = 0;  // 無敵状態になっている残りのフレーム数。
+    private uint _existingCounter = 0;  // enabledがtrueになってからのフレーム数。
+    private readonly Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ拡げた座標。
+
+    /// <summary>ゲーム内で衝突判定するオブジェクトの処理を委譲。</summary>
+    /// <param name="transform">委譲される位置</param>
+    /// <param name="spriteRenderer">委譲されるスプライト</param>
+    /// <param name="speed">初期速度の速さ</param>
+    /// <param name="angle">初期速度の方向</param>
+    /// <param name="damage">衝突時に相手に与えるダメージ</param>
+    /// <param name="hitPoint">体力</param>
+    /// <param name="autoDisabling">画面外に出たら自動的に無効にするか否か</param>
+    public Mover(in Transform transform, in SpriteRenderer spriteRenderer, float speed, float angle, uint damage, int hitPoint, bool autoDisabling = true)
     {
-        get { return angle; }
+        _transform = transform;
+        _spriteRenderer = spriteRenderer;
+        _speed = speed;
+        _angle = angle;
+        _damage = damage;
+        _hitPoint = hitPoint;
+        float width = spriteRenderer.bounds.size.x;
+        float height = spriteRenderer.bounds.size.y;
+        ScreenMinimum = Camera.main.ViewportToWorldPoint(new Vector2(0, 0)) - (new Vector3(width, height, 0) * 0.5f);
+        ScreenMaximum = Camera.main.ViewportToWorldPoint(new Vector2(1, 1)) + (new Vector3(width, height, 0) * 0.5f);
+
+        if (autoDisabling)
+            disableIfOutside = () =>
+            {
+                ++_existingCounter;
+                if (!isInside())
+                    _enabled = false;
+            };
+        else
+            disableIfOutside = () => {};
+    }
+
+    /// <summary>現在のフレームにおける切り取られた画像を返す。</summary>
+    /// <param name="currentFrames">現在までのフレーム数</param>
+    /// <returns>切り取られたスプライト</returns>
+    protected abstract Sprite clipFromImage(int countedFrames);
+
+    /// <summary>画面外にあるために無効にするか否かを判定。</summary>
+    private Action disableIfOutside;
+
+    public float Speed
+    {
+        get { return _speed; }
         set {
-            this.angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
+            if (_enabled)
+                _speed = value;
         }
     }
-    protected uint damage;  // 衝突時に相手に与えるダメージ。
-    public uint Damage { get; }
-    protected int hitPoint;  // 体力。「消滅」と「撃破」とを区別するために弾でも設定が必須。外部からこれを参照する以外に、OnCollideに返り値を持たせる実装でも良いかもしれない。
-    public int HitPoint { get; }
-    protected uint invincibleCounter;  // 無敵状態になっている残りのフレーム数。
+    public float Angle
+    {
+        get { return _angle; }
+        set {
+            if (_enabled)
+                _angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
+        }
+    }
+    public uint Damage { get => _damage; }
+    public int HitPoint { get => _hitPoint; }
+
+    /// <summary>MonoBehaviorのUpdateから呼ばれる処理。</summary>
+    public virtual void Update()
+    {
+        _spriteRenderer.sprite = clipFromImage(Time.frameCount);
+    }
+
+    /// <summary>MonoBehaviorのFixedUpdateから呼ばれる処理。</summary>
+    public virtual void FixedUpdate()
+    {
+        //_rigid2D.velocity = new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle));
+        _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
+        disableIfOutside();
+    }
+
+    /// <summary>MonoBehaviorのOnTriggerEnter2Dから呼ばれる処理。</summary>
+    public abstract void OnTriggerEnter2D(in Mover other);
+
+    public void Erase()
+    {
+        _enabled = false;
+    }
+
+    public bool IsEnabled()
+    {
+        return _enabled;
+    }
 
     public bool IsInvincible()
     {
-        return (invincibleCounter > 0) ? true : false;
+        return (_invincibleCounter > 0) ? true : false;
     }
 
     public void TurnInvincible(uint frames)
     {
-        invincibleCounter = frames;
+        _invincibleCounter = frames;
     }
 
     protected virtual void spawned()
     {
-        enabled = true;
-	    existingCounter = 0;
+        _enabled = true;
+	    _existingCounter = 0;
     }
-
-    protected virtual void disableIfOutside()
-    {
-        ++existingCounter;
-        if (!isInside())
-            enabled = false;
-    }
-
-    /// <summary>現在のフレームにおける画像の切り取り位置を返す。</summary>
-    /// <param name="currentFrames">現在までのフレーム数</param>
-    /// <returns>切り取る矩形</returns>
-    protected Func<int, Sprite> clipFromImage;
-
-    private uint existingCounter;  // enabledがtrueになってからのフレーム数。
 
     /// <summary>オブジェクトが画面内に存在するか？</summary>
     /// <returns>存在すれば真、しなければ偽</returns>
@@ -62,21 +129,19 @@ public abstract class Mover : MonoBehaviour
     /// </remarks>
 	private bool isInside()
     {
-        if (existingCounter < 60)
+        if (_existingCounter < 60)
             return true;
-        // HACK: 定数なので、本来は初期化で代入したい。Unityの継承との兼ね合いをどうするべきか？
-        float width = spriteRenderer.bounds.size.x;
-        float height = spriteRenderer.bounds.size.y;
-        Vector2 minimum = mainCamera.ViewportToWorldPoint(new Vector2(0, 0)) - (new Vector3(width, height, 0) * 0.5f);
-        Vector2 maximum = mainCamera.ViewportToWorldPoint(new Vector2(1, 1)) + (new Vector3(width, height, 0) * 0.5f);
-        if (transform.position.x < minimum.x || transform.position.x > maximum.x
-                || transform.position.y < minimum.y || transform.position.y > maximum.y) {
-            if (existingCounter > 66)
+        if (_transform.position.x < ScreenMinimum.x || _transform.position.x > ScreenMaximum.x
+                || _transform.position.y < ScreenMinimum.y || _transform.position.y > ScreenMaximum.y)
+        {
+            if (_existingCounter > 66)
                 return false;
             else
                 return true;
-        } else {
-            existingCounter = 60;
+        }
+        else
+        {
+            _existingCounter = 60;
             return true;
         }
     }
