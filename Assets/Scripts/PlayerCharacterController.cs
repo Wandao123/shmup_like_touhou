@@ -21,36 +21,17 @@ public class PlayerCharacterController : Player
         set => base.Velocity = value.normalized * (SlowMode ? lowSpeed : highSpeed);
     }
 
-    // 参考：https://tsubakit1.hateblo.jp/entry/2019/06/18/000323
-    //       https://light11.hatenadiary.com/entry/2019/12/30/222302
-    //       https://light11.hatenadiary.com/entry/2019/03/06/002800
     // Start is called before the first frame update
-    async void Start()
+    void Start()
     {
-        var spritesList = await Addressables.LoadAssetAsync<IList<Sprite>>(path).Task;
-        clips = new Sprite[3, 5];
-        for (var i = 0; i < 3; i++)
-            for (var j = 0; j < 5; j++)
-                clips[i, j] = spritesList[5 * i + j];
-        //spriteRenderer = GetComponent<SpriteRenderer>();
-        //mainCamera = Camera.main;
-        rigid2D = GetComponent<Rigidbody2D>();
-        clipFromImage = clipFromImageClosure();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
         // アニメーション。
-        // HACK: Startの非同期処理が終了する前に実行されてしまう。
-        try
-        {
-            spriteRenderer.sprite = clipFromImage(Time.frameCount);
-        }
-        catch (NullReferenceException)
-        {
-            Debug.Log("Await the initialization for clips");
-        }
+        spriteRenderer.sprite = clipFromImage(Time.frameCount);
 
         // 描画の前処理。
         invincibleCounter = (invincibleCounter > 0) ? invincibleCounter - 1 : 0;
@@ -81,6 +62,23 @@ public class PlayerCharacterController : Player
         position.x = Mathf.Clamp(position.x, minimum.x, maximum.x);
         position.y = Mathf.Clamp(position.y, minimum.y, maximum.y);
         transform.position = position;
+    }
+
+    // 参考：https://tsubakit1.hateblo.jp/entry/2019/06/18/000323
+    //       https://light11.hatenadiary.com/entry/2019/12/30/222302
+    //       https://light11.hatenadiary.com/entry/2019/03/06/002800
+    async void Awake()
+    {
+        var spritesList = await Addressables.LoadAssetAsync<IList<Sprite>>(path).Task;
+        clips = new Sprite[3, 5];
+        for (var i = 0; i < 3; i++)
+            for (var j = 0; j < 5; j++)
+                clips[i, j] = spritesList[5 * i + j];
+        //spriteRenderer = GetComponent<SpriteRenderer>();
+        //mainCamera = Camera.main;
+        rigid2D = GetComponent<Rigidbody2D>();
+        clipFromImage = clipFromImageClosure();
+        this.enabled = true;
     }
 
     private Func<int, Sprite> clipFromImageClosure()

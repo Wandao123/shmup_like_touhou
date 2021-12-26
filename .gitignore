@@ -67,5 +67,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Additional settings
-[Aa]ssets/Plugins/GitHub*
+/[Aa]ssets/Plugins/GitHub*
 
