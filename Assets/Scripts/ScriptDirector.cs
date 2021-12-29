@@ -24,13 +24,26 @@ public class ScriptDirector : MonoBehaviour
     void Start()
     {
         _player = (Instantiate(_playerPrefab, new Vector2(0, -_screenHeight / 2 + _playerHeight), Quaternion.identity) as GameObject).GetComponent<PlayerCharacterController>();
-        _player.enabled = true;
-        _player.TurnInvincible(180);
+        StartCoroutine(playerScript());
     }
 
     void Update()
     {
         var velocity = _inputActions.Player.Move.ReadValue<Vector2>();
         _player.Velocity = velocity;
+    }
+
+    private IEnumerator playerScript()
+    {
+        _player.Spawned();
+        _player.TurnInvincible(180);
+        for (var i = 1; i <= 210; i++)
+            yield return null;
+        _player.Erase();
+        for (var i = 1; i <= 120; i++)
+            yield return null;
+        _player.transform.position = new Vector2(0, -_screenHeight / 2 + _playerHeight);
+        _player.Spawned();
+        Debug.Log("Script has finished.");
     }
 }

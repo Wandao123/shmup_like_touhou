@@ -12,6 +12,7 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
     private float _lowSpeed = 0.0f;
     [SerializeField]
     private string _path = "";
+    private SpriteRenderer _spriteRenderer;
     private PlayerCharacter _playerCharacter;
     private Rigidbody2D _rigid2D;
 
@@ -29,25 +30,26 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
     void Awake()
     {
         var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
-        _playerCharacter = new PlayerCharacter(transform, GetComponent<SpriteRenderer>(), _highSpeed, _lowSpeed, spritesList);
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
+        _playerCharacter = new PlayerCharacter(transform, _spriteRenderer, _highSpeed, _lowSpeed, spritesList);
         _rigid2D = GetComponent<Rigidbody2D>();
     }
 
     void Start()
     {
-
+        
     }
 
     void Update()
     {
-        _playerCharacter.Update();
+        if (_playerCharacter.IsEnabled())
+            _playerCharacter.Update();
     }
 
     void FixedUpdate()
     {
-        // HACK: 自機の操作では跳ね返るような挙動をするので、Translateを使った方が良い？
         _rigid2D.velocity = _playerCharacter.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
-        //transform.Translate(_playerCharacter.Velocity);
         _playerCharacter.FixedUpdate();
     }
 
@@ -58,6 +60,8 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
 
     public void Erase()
     {
+        _spriteRenderer.enabled = false;
+        _rigid2D.simulated = false;
         _playerCharacter.Erase();
     }
 
@@ -78,6 +82,8 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
 
     public void Spawned()
     {
+        _spriteRenderer.enabled = true;
+        _rigid2D.simulated = true;
         _playerCharacter.Spawned();
     }
 }

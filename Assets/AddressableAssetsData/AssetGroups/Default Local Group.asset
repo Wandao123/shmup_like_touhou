@@ -29,6 +29,18 @@ MonoBehaviour:
     m_Address: Assets/images/Sanaedot.png
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: 020c76a068b6d61498bd96ed1734bdd9
+    m_Address: Assets/Prefabs/Marisa.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: f8bb7fd48749fa44ab26657fd2c70943
+    m_Address: Assets/Prefabs/Reimu.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2a91964608ccb9243b15e52b5d9ea996
+    m_Address: Assets/Prefabs/Sanae.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1ba928bb3ecbf2d40880331173864333, type: 2}
   m_SchemaSet:
