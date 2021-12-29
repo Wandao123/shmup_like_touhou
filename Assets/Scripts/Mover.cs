@@ -3,11 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface IMover
+{
+    float Speed { get; set; }
+    float Angle { get; set; }
+    uint Damage { get; }
+    int HitPoint { get; }
+
+    void Erase();
+    bool IsEnabled();
+    bool IsInvincible();
+    void TurnInvincible(uint frames);
+}
+
 /// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
 /// <remarks>
 /// デフォルトでenabledにfalseを設定するため、生成しただけでは更新されない。継承先で「実体化関数」を定義する必要がある。名前を別にしたのは、各クラスで渡すべき引数が異なるため。
 /// </remarks>
-public abstract class Mover
+public abstract class Mover : IMover
 {
     protected Transform _transform;
     protected SpriteRenderer _spriteRenderer;
@@ -19,6 +32,9 @@ public abstract class Mover
     protected uint _invincibleCounter = 0;  // 無敵状態になっている残りのフレーム数。
     private uint _existingCounter = 0;  // enabledがtrueになってからのフレーム数。
     private readonly Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ拡げた座標。
+
+    /// <summary>画面外にあるために無効にするか否かを判定。</summary>
+    private Action disableIfOutside;
 
     /// <summary>ゲーム内で衝突判定するオブジェクトの処理を委譲。</summary>
     /// <param name="transform">委譲される位置</param>
@@ -51,14 +67,6 @@ public abstract class Mover
         else
             disableIfOutside = () => {};
     }
-
-    /// <summary>現在のフレームにおける切り取られた画像を返す。</summary>
-    /// <param name="currentFrames">現在までのフレーム数</param>
-    /// <returns>切り取られたスプライト</returns>
-    protected abstract Sprite clipFromImage(int countedFrames);
-
-    /// <summary>画面外にあるために無効にするか否かを判定。</summary>
-    private Action disableIfOutside;
 
     public float Speed
     {
@@ -93,8 +101,8 @@ public abstract class Mover
         disableIfOutside();
     }
 
-    /// <summary>MonoBehaviorのOnTriggerEnter2Dから呼ばれる処理。</summary>
-    public abstract void OnTriggerEnter2D(in Mover other);
+    /// <summary>MonoBehaviorのOnCollisionEnter2Dから呼ばれる処理。</summary>
+    public abstract void OnCollisionEnter2D(in IMover mover);
 
     public void Erase()
     {
@@ -121,6 +129,11 @@ public abstract class Mover
         _enabled = true;
 	    _existingCounter = 0;
     }
+
+    /// <summary>現在のフレームにおける切り取られた画像を返す。</summary>
+    /// <param name="currentFrames">現在までのフレーム数</param>
+    /// <returns>切り取られたスプライト</returns>
+    protected abstract Sprite clipFromImage(int countedFrames);
 
     /// <summary>オブジェクトが画面内に存在するか？</summary>
     /// <returns>存在すれば真、しなければ偽</returns>

@@ -2,7 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Player : Mover
+public interface IPlayer
+{
+    bool SlowMode { get; set; }
+    Vector2 Velocity { get; set; }
+
+    void Spawned();
+}
+
+public abstract class Player : Mover, IPlayer
 {
     private Vector2 _velocity = Vector2.zero;  // 単位：ドット毎フレーム
 
@@ -42,7 +50,7 @@ public abstract class Player : Mover
         }
     }
 
-    public override void OnTriggerEnter2D(in Mover other)
+    public override void OnCollisionEnter2D(in IMover mover)
     {
         if (_invincibleCounter > 0)
             return;

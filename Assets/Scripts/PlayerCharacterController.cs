@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class PlayerCharacterController : MonoBehaviour
+public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
 {
     [SerializeField]
     private float _highSpeed = 0.0f;
@@ -15,18 +15,29 @@ public class PlayerCharacterController : MonoBehaviour
     private PlayerCharacter _playerCharacter;
     private Rigidbody2D _rigid2D;
 
-    public Player Status
+    public float Speed { get => _playerCharacter.Speed; set => _playerCharacter.Speed = value; }
+    public float Angle { get => _playerCharacter.Angle; set => _playerCharacter.Angle = value; }
+    public uint Damage { get => _playerCharacter.Damage; }
+    public int HitPoint { get => _playerCharacter.HitPoint; }
+    public bool SlowMode { get => _playerCharacter.SlowMode; set => _playerCharacter.SlowMode = value; }
+    public Vector2 Velocity { get => _playerCharacter.Velocity; set => _playerCharacter.Velocity = value; }
+
+    // 参考：https://tsubakit1.hateblo.jp/entry/2019/06/18/000323
+    //       https://light11.hatenadiary.com/entry/2019/12/30/222302
+    //       https://light11.hatenadiary.com/entry/2019/03/06/002800
+    //       https://light11.hatenadiary.com/entry/2021/04/13/194929
+    void Awake()
     {
-        get => _playerCharacter;
+        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
+        _playerCharacter = new PlayerCharacter(transform, GetComponent<SpriteRenderer>(), _highSpeed, _lowSpeed, spritesList);
+        _rigid2D = GetComponent<Rigidbody2D>();
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        _playerCharacter.Spawned();
+
     }
 
-    // Update is called once per frame
     void Update()
     {
         _playerCharacter.Update();
@@ -40,15 +51,34 @@ public class PlayerCharacterController : MonoBehaviour
         _playerCharacter.FixedUpdate();
     }
 
-    // 参考：https://tsubakit1.hateblo.jp/entry/2019/06/18/000323
-    //       https://light11.hatenadiary.com/entry/2019/12/30/222302
-    //       https://light11.hatenadiary.com/entry/2019/03/06/002800
-    //       https://light11.hatenadiary.com/entry/2021/04/13/194929
-    void Awake()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
-        _playerCharacter = new PlayerCharacter(transform, GetComponent<SpriteRenderer>(), _highSpeed, _lowSpeed, spritesList);
-        _rigid2D = GetComponent<Rigidbody2D>();
+        _playerCharacter.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
+    }
+
+    public void Erase()
+    {
+        _playerCharacter.Erase();
+    }
+
+    public bool IsEnabled()
+    {
+        return _playerCharacter.IsEnabled();
+    }
+
+    public bool IsInvincible()
+    {
+        return _playerCharacter.IsInvincible();
+    }
+
+    public void TurnInvincible(uint frames)
+    {
+        _playerCharacter.TurnInvincible(frames);
+    }
+
+    public void Spawned()
+    {
+        _playerCharacter.Spawned();
     }
 }
 
