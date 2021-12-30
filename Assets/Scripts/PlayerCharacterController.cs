@@ -24,8 +24,9 @@ public class PlayerCharacterController : PlayerController
         var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
-        _player = new PlayerCharacter(transform, _spriteRenderer, _highSpeed, _lowSpeed, spritesList);
         _rigid2D = GetComponent<Rigidbody2D>();
+        _rigid2D.simulated = false;
+        _player = new PlayerCharacter(transform, _spriteRenderer, _rigid2D, _highSpeed, _lowSpeed, spritesList);
     }
 
     void Start()
@@ -41,7 +42,6 @@ public class PlayerCharacterController : PlayerController
 
     void FixedUpdate()
     {
-        _rigid2D.velocity = _player.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
         _player.FixedUpdate();
     }
 
@@ -77,11 +77,12 @@ class PlayerCharacter : Player
     /// <summary>自機キャラクタの処理を委譲。</summary>
     /// <param name="transform">委譲される位置</param>
     /// <param name="spriteRenderer">委譲されるスプライト</param>
+    /// <param name="rigid2D">委譲される物理演算クラス</param>
     /// <param name="highSpeed">高速移動時の速さ（単位：ドット毎フレーム）</param>
     /// <param name="lowSpeed">低速移動時の速さ（単位：ドット毎フレーム）</param>
     /// <param name="spritesList">切り分けられた画像のリスト</param>
-    public PlayerCharacter(in Transform transform, in SpriteRenderer spriteRenderer, float highSpeed, float lowSpeed, in IList<Sprite> spritesList)
-        : base(transform, spriteRenderer)
+    public PlayerCharacter(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D, float highSpeed, float lowSpeed, in IList<Sprite> spritesList)
+        : base(transform, spriteRenderer, rigid2D)
     {
         _highSpeed = highSpeed;
         _lowSpeed = lowSpeed;
@@ -106,11 +107,19 @@ class PlayerCharacter : Player
     {
         base.FixedUpdate();
 
-        // 移動制限。ただし、速度を変化させた場合のみで、位置を直接変える場合は制限しない。
-        _transform.position = new Vector2(
-            Mathf.Clamp(_transform.position.x, ScreenMinimum.x, ScreenMaximum.x),
-            Mathf.Clamp(_transform.position.y, ScreenMinimum.y, ScreenMaximum.y)
-        );
+        // 速度の更新と移動制限。速度の更新はMoverでも行われるが、どうしても三角関数の計算でずれるので、自機クラスではここで再設定する。移動制限は速度を変化させた場合のみで、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いである。
+        var nextPosition = this.Position + this.Velocity;
+        var velocity = this.Velocity;
+        if (nextPosition.x < ScreenMinimum.x || nextPosition.x > ScreenMaximum.x)
+            velocity.x = 0.0f;
+        if (nextPosition.y < ScreenMinimum.y || nextPosition.y > ScreenMaximum.y)
+            velocity.y = 0.0f;
+        _rigid2D.velocity = velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+ 
+        /*_rigid2D.MovePosition(_rigid2D.position + new Vector2(
+            Mathf.Clamp(_rigid2D.position.x, ScreenMinimum.x, ScreenMaximum.x),
+            Mathf.Clamp(_rigid2D.position.y, ScreenMinimum.y, ScreenMaximum.y)
+        ));*/
     }
 
     protected override Sprite clipFromImage(int countedFrames)

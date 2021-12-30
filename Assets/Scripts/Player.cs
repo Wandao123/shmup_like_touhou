@@ -17,6 +17,7 @@ public abstract class PlayerController : MonoBehaviour, IPlayer
 {
     protected Player _player;
 
+    public Vector2 Position { get => _player.Position; set => _player.Position = value; }
     public float Speed { get => _player.Speed; set => _player.Speed = value; }
     public float Angle { get => _player.Angle; set => _player.Angle = value; }
     public uint Damage { get => _player.Damage; }
@@ -57,8 +58,9 @@ public abstract class Player : Mover, IPlayer
     /// <summary>自機キャラクタと自機オプションの処理を委譲。</summary>
     /// <param name="transform">委譲される位置</param>
     /// <param name="spriteRenderer">委譲されるスプライト</param>
-    public Player(in Transform transform, in SpriteRenderer spriteRenderer)
-        : base(transform, spriteRenderer, 0.0f, -0.5f * Mathf.PI, 1, 3, false)
+    /// <param name="rigid2D">委譲される物理演算クラス</param>
+    public Player(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D)
+        : base(transform, spriteRenderer, rigid2D, 0.0f, -0.5f * Mathf.PI, 1, 3, false)
     {}
 
     public bool SlowMode { get; set; } = false;  // 低速移動か否か。

@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 public interface IMover
 {
+    Vector2 Position { get; set; }
     float Speed { get; set; }
     float Angle { get; set; }
     uint Damage { get; }
@@ -24,6 +26,7 @@ public abstract class Mover : IMover
 {
     protected Transform _transform;
     protected SpriteRenderer _spriteRenderer;
+    protected Rigidbody2D _rigid2D;
     protected float _speed;  // 単位：ドット毎フレーム
     protected float _angle;  // x軸を基準とした角度。時計回りの方向を正とする。
     protected uint _damage;  // 衝突時に相手に与えるダメージ。
@@ -39,15 +42,17 @@ public abstract class Mover : IMover
     /// <summary>ゲーム内で衝突判定するオブジェクトの処理を委譲。</summary>
     /// <param name="transform">委譲される位置</param>
     /// <param name="spriteRenderer">委譲されるスプライト</param>
+    /// <param name="rigid2D">委譲される物理演算クラス</param>
     /// <param name="speed">初期速度の速さ</param>
     /// <param name="angle">初期速度の方向</param>
     /// <param name="damage">衝突時に相手に与えるダメージ</param>
     /// <param name="hitPoint">体力</param>
     /// <param name="autoDisabling">画面外に出たら自動的に無効にするか否か</param>
-    public Mover(in Transform transform, in SpriteRenderer spriteRenderer, float speed, float angle, uint damage, int hitPoint, bool autoDisabling = true)
+    public Mover(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D, float speed, float angle, uint damage, int hitPoint, bool autoDisabling = true)
     {
         _transform = transform;
         _spriteRenderer = spriteRenderer;
+        _rigid2D = rigid2D;
         _speed = speed;
         _angle = angle;
         _damage = damage;
@@ -66,6 +71,12 @@ public abstract class Mover : IMover
             };
         else
             disableIfOutside = () => {};
+    }
+
+    public Vector2 Position
+    {
+        get => _transform.position;
+        set => _rigid2D.MovePosition(value);
     }
 
     public float Speed
@@ -96,7 +107,7 @@ public abstract class Mover : IMover
     /// <summary>MonoBehaviorのFixedUpdateから呼ばれる処理。</summary>
     public virtual void FixedUpdate()
     {
-        //_rigid2D.velocity = new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle));
+        _rigid2D.velocity = new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
         _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
         disableIfOutside();
     }
@@ -144,8 +155,8 @@ public abstract class Mover : IMover
     {
         if (_existingCounter < 60)
             return true;
-        if (_transform.position.x < ScreenMinimum.x || _transform.position.x > ScreenMaximum.x
-                || _transform.position.y < ScreenMinimum.y || _transform.position.y > ScreenMaximum.y)
+        if (this.Position.x < ScreenMinimum.x || this.Position.x > ScreenMaximum.x
+                || this.Position.y < ScreenMinimum.y || this.Position.y > ScreenMaximum.y)
         {
             if (_existingCounter > 66)
                 return false;
@@ -160,36 +171,24 @@ public abstract class Mover : IMover
     }
 }
 
-public interface IMoverGenerator<MoverPrefab, ID>
-    where MoverPrefab : IMover
-    where ID : Enum
-{
-    IList<MoverPrefab> ObjectsList { get;}
-
-    MoverPrefab GenerateObject(ID id, Vector2 position);
-}
-
 /// <summary>IMoverを継承したUnityEngine.GameObjectの生成クラス。</summary>
 /// <remarks>
-/// GameObjectのリスト（プレハブから複製されたものを想定）を所有する。生成の際には、
-/// もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
-/// 所有するものはGameObjectだが、ジェネリックスで指定する型はMoverの子クラスであることに注意。
+/// Controllerクラスのリスト（プレハブから複製されたGameObjectにアタッチされているもの）を所有する。
+/// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
+/// 列挙型IDの要素は複製対象のプレハブ名の形容詞部分か固有名詞とする。
 /// </remarks>
-/*public abstract class MoverGenerator<MoverPrefab, ID> : IMoverGenerator<MoverPrefab, ID>
-    where MoverPrefab : IMover
+public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
+    where MoverController : IMover
     where ID : Enum
 {
-    private List<MoverPrefab> _objectsList;  // 貯蓄対象オブジェクト。
+    // フィールドの初期化は子クラスのAwakeで行え。
+    protected List<MoverController> _objectsList;  // 管理対象オブジェクト。
+    protected string _objectNoun;  // IDの要素名を形容詞で名付けた際に、生成対象クラスの名前を補完する文字列。
 
-    public MoverGenerator()
-    {
-
-    }
-
-    public virtual IList<IMover> ObjectsList
+    public IList<MoverController> ObjectsList
     {
         get {
-            var temp = new List<IMover>();
+            var temp = new List<MoverController>();
             foreach (var mover in _objectsList)
                 if (mover.IsEnabled())
                     temp.Add(mover);
@@ -197,12 +196,28 @@ public interface IMoverGenerator<MoverPrefab, ID>
         }
     }
 
-    public IMover GenerateObject(ID id)
+    /// <summary>未使用のMoverController型のオブジェクトをobjectsListから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
+    /// <param name="id">複製するプレハブに対応する列挙名</param>
+    /// <returns>生成されたGameObjectにアタッチされているControllerクラス</returns>
+    /// <remarks>
+    /// 生成されたGameObjectは描画されず、物理演算も実行されない。返り値に対して「実体化関数」を呼ぶことで、それらが有効化される。
+    /// また、ステージを作成する上でGameObject自体をそのまま扱うことは少ないと判断したので、返り値はControllerクラスである。
+    /// GameObject自体を扱いたい場合は、このクラスの子オブジェクトを参照すれば良い。
+    /// </remarks>
+    public MoverController GenerateObject(ID id)
     {
         foreach (var mover in _objectsList)
-            if (!mover.IsEnabled())
+            if (System.Type.GetType(id.ToString()) == mover.GetType() && !mover.IsEnabled())
                 return mover;
-        _objectsList.Insert(0, Instantiate(TMover));
+        var prefab = Addressables.LoadAssetAsync<GameObject>(makePath(id)).WaitForCompletion();
+        var newObject = Instantiate(prefab) as GameObject;
+        newObject.transform.parent = this.transform;
+        _objectsList.Insert(0, newObject.GetComponent<MoverController>());
         return _objectsList[0];
     }
-}*/
+
+    protected string makePath(ID id)
+    {
+        return "Assets/Prefabs/" + id.ToString() + _objectNoun + ".prefab";
+    }
+}

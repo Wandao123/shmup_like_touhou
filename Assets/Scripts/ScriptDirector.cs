@@ -30,7 +30,8 @@ public class ScriptDirector : MonoBehaviour
     void Start()
     {
         _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().PlayerSize;
-        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _playerSize.y));
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
+        _player.Position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
         StartCoroutine(playerScript());
     }
 
@@ -49,7 +50,8 @@ public class ScriptDirector : MonoBehaviour
         _player.Erase();
         for (var i = 1; i <= 120; i++)
             yield return null;
-        _player.transform.position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
+        _player.Position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
         _player.Spawned();
         Debug.Log("Script has finished.");
     }
