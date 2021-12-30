@@ -29,7 +29,6 @@ public class PlayerGenerator : MoverGenerator<PlayerController, PlayerID>
         if (size - _playerSize != Vector2.zero)
             Debug.LogWarning("The width or the height of the sprite are not integer numbers: " + size.ToString());
 
-        _objectsList = new List<PlayerController>();
         _objectNoun = "";
         
         // 予めオブジェクトを生成しておく場合はここに記述。

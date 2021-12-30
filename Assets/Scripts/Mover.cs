@@ -173,7 +173,7 @@ public abstract class Mover : IMover
 
 /// <summary>IMoverを継承したUnityEngine.GameObjectの生成クラス。</summary>
 /// <remarks>
-/// Controllerクラスのリスト（プレハブから複製されたGameObjectにアタッチされているもの）を所有する。
+/// Controllerクラス（プレハブから複製されたGameObjectにアタッチされているもの）を子オブジェクトとして所有する。
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名の形容詞部分か固有名詞とする。
 /// </remarks>
@@ -182,21 +182,20 @@ public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
     where ID : Enum
 {
     // フィールドの初期化は子クラスのAwakeで行え。
-    protected List<MoverController> _objectsList;  // 管理対象オブジェクト。
-    protected string _objectNoun;  // IDの要素名を形容詞で名付けた際に、生成対象クラスの名前を補完する文字列。
+    protected string _objectNoun = "";  // IDの要素名を形容詞で名付けた際に、生成対象クラスの名前を補完する文字列。
 
     public IList<MoverController> ObjectsList
     {
         get {
             var temp = new List<MoverController>();
-            foreach (var mover in _objectsList)
-                if (mover.IsEnabled())
+            foreach (Transform child in transform)
+                if (child.GetComponent<MoverController>() is var mover && mover.IsEnabled())
                     temp.Add(mover);
             return temp;
         }
     }
 
-    /// <summary>未使用のMoverController型のオブジェクトをobjectsListから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
+    /// <summary>未使用のMoverController型のオブジェクトを子オブジェクトから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
     /// <param name="id">複製するプレハブに対応する列挙名</param>
     /// <returns>生成されたGameObjectにアタッチされているControllerクラス</returns>
     /// <remarks>
@@ -206,14 +205,14 @@ public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
     /// </remarks>
     public MoverController GenerateObject(ID id)
     {
-        foreach (var mover in _objectsList)
-            if (System.Type.GetType(id.ToString()) == mover.GetType() && !mover.IsEnabled())
+        foreach (Transform child in transform)
+            if (child.name == id.ToString() + _objectNoun && child.GetComponent<MoverController>() is var mover && !mover.IsEnabled())
                 return mover;
         var prefab = Addressables.LoadAssetAsync<GameObject>(makePath(id)).WaitForCompletion();
         var newObject = Instantiate(prefab) as GameObject;
+        newObject.name = prefab.name;
         newObject.transform.parent = this.transform;
-        _objectsList.Insert(0, newObject.GetComponent<MoverController>());
-        return _objectsList[0];
+        return newObject.GetComponent<MoverController>();
     }
 
     protected string makePath(ID id)
