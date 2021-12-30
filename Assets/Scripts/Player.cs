@@ -2,12 +2,52 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IPlayer
+public interface IPlayer : IMover
 {
     bool SlowMode { get; set; }
     Vector2 Velocity { get; set; }
 
     void Spawned();
+}
+
+// ***ControllerクラスはMonoBehaviourクラスを継承したもの（アタッチ可能）。
+// MonoBehaviorのメソッドに加えて、***と同名のクラスと同じインターフェイスを持つ。
+// Controllerと名の付く抽象クラスは***Generatorクラスに共用管理される。
+public abstract class PlayerController : MonoBehaviour, IPlayer
+{
+    protected Player _player;
+
+    public float Speed { get => _player.Speed; set => _player.Speed = value; }
+    public float Angle { get => _player.Angle; set => _player.Angle = value; }
+    public uint Damage { get => _player.Damage; }
+    public int HitPoint { get => _player.HitPoint; }
+    public bool SlowMode { get => _player.SlowMode; set => _player.SlowMode = value; }
+    public Vector2 Velocity { get => _player.Velocity; set => _player.Velocity = value; }
+
+    public virtual void Erase()
+    {
+        _player.Erase();
+    }
+
+    public bool IsEnabled()
+    {
+        return _player.IsEnabled();
+    }
+
+    public bool IsInvincible()
+    {
+        return _player.IsInvincible();
+    }
+
+    public void TurnInvincible(uint frames)
+    {
+        _player.TurnInvincible(frames);
+    }
+
+    public virtual void Spawned()
+    {
+        _player.Spawned();
+    }
 }
 
 public abstract class Player : Mover, IPlayer

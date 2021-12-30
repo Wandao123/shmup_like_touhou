@@ -4,26 +4,33 @@ using UnityEngine;
 
 public class ScriptDirector : MonoBehaviour
 {
-    private int _screenWidth, _screenHeight;
-    private int _playerWidth, _playerHeight;
+    private Vector2Int _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
+    private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     [SerializeField]
-    private GameObject _playerPrefab;  // TODO: 管理クラスに置き換える。
-    private PlayerCharacterController _player;
+    private PlayerGenerator _playerGenerator;
+    private PlayerController _player;
+
+    public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
+    public Vector2Int ScreenTopRight { get => _screenTopRight; }
 
     void Awake()
     {
-        _screenWidth = 2 * (int)Camera.main.ViewportToWorldPoint(new Vector2(1, 1)).x;
-        _screenHeight = 2 * (int)Camera.main.ViewportToWorldPoint(new Vector2(1, 1)).y;
-        _playerWidth = (int)_playerPrefab.GetComponent<SpriteRenderer>().bounds.size.x;
-        _playerHeight = (int)_playerPrefab.GetComponent<SpriteRenderer>().bounds.size.y;
+        Vector2 bottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
+        _screenBottomLeft = Vector2Int.RoundToInt(bottomLeft);
+        Vector2 topRight = Camera.main.ViewportToWorldPoint(Vector2.one);
+        _screenTopRight = Vector2Int.RoundToInt(topRight);
+        if (bottomLeft - _screenBottomLeft != Vector2.zero || topRight - _screenTopRight != Vector2.zero)
+            Debug.LogWarning("The width or the height of the screen are not integer numbers: " + bottomLeft.ToString() + ", " + topRight.ToString());
+            
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
     }
 
     void Start()
     {
-        _player = (Instantiate(_playerPrefab, new Vector2(0, -_screenHeight / 2 + _playerHeight), Quaternion.identity) as GameObject).GetComponent<PlayerCharacterController>();
+        _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().PlayerSize;
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _playerSize.y));
         StartCoroutine(playerScript());
     }
 
@@ -42,7 +49,7 @@ public class ScriptDirector : MonoBehaviour
         _player.Erase();
         for (var i = 1; i <= 120; i++)
             yield return null;
-        _player.transform.position = new Vector2(0, -_screenHeight / 2 + _playerHeight);
+        _player.transform.position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
         _player.Spawned();
         Debug.Log("Script has finished.");
     }

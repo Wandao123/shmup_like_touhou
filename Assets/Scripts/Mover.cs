@@ -159,3 +159,50 @@ public abstract class Mover : IMover
         }
     }
 }
+
+public interface IMoverGenerator<MoverPrefab, ID>
+    where MoverPrefab : IMover
+    where ID : Enum
+{
+    IList<MoverPrefab> ObjectsList { get;}
+
+    MoverPrefab GenerateObject(ID id, Vector2 position);
+}
+
+/// <summary>IMoverを継承したUnityEngine.GameObjectの生成クラス。</summary>
+/// <remarks>
+/// GameObjectのリスト（プレハブから複製されたものを想定）を所有する。生成の際には、
+/// もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
+/// 所有するものはGameObjectだが、ジェネリックスで指定する型はMoverの子クラスであることに注意。
+/// </remarks>
+/*public abstract class MoverGenerator<MoverPrefab, ID> : IMoverGenerator<MoverPrefab, ID>
+    where MoverPrefab : IMover
+    where ID : Enum
+{
+    private List<MoverPrefab> _objectsList;  // 貯蓄対象オブジェクト。
+
+    public MoverGenerator()
+    {
+
+    }
+
+    public virtual IList<IMover> ObjectsList
+    {
+        get {
+            var temp = new List<IMover>();
+            foreach (var mover in _objectsList)
+                if (mover.IsEnabled())
+                    temp.Add(mover);
+            return temp;
+        }
+    }
+
+    public IMover GenerateObject(ID id)
+    {
+        foreach (var mover in _objectsList)
+            if (!mover.IsEnabled())
+                return mover;
+        _objectsList.Insert(0, Instantiate(TMover));
+        return _objectsList[0];
+    }
+}*/

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
+public class PlayerCharacterController : PlayerController
 {
     [SerializeField]
     private float _highSpeed = 0.0f;
@@ -13,15 +13,7 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
     [SerializeField]
     private string _path = "";
     private SpriteRenderer _spriteRenderer;
-    private PlayerCharacter _playerCharacter;
     private Rigidbody2D _rigid2D;
-
-    public float Speed { get => _playerCharacter.Speed; set => _playerCharacter.Speed = value; }
-    public float Angle { get => _playerCharacter.Angle; set => _playerCharacter.Angle = value; }
-    public uint Damage { get => _playerCharacter.Damage; }
-    public int HitPoint { get => _playerCharacter.HitPoint; }
-    public bool SlowMode { get => _playerCharacter.SlowMode; set => _playerCharacter.SlowMode = value; }
-    public Vector2 Velocity { get => _playerCharacter.Velocity; set => _playerCharacter.Velocity = value; }
 
     // 参考：https://tsubakit1.hateblo.jp/entry/2019/06/18/000323
     //       https://light11.hatenadiary.com/entry/2019/12/30/222302
@@ -32,7 +24,7 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
         var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
-        _playerCharacter = new PlayerCharacter(transform, _spriteRenderer, _highSpeed, _lowSpeed, spritesList);
+        _player = new PlayerCharacter(transform, _spriteRenderer, _highSpeed, _lowSpeed, spritesList);
         _rigid2D = GetComponent<Rigidbody2D>();
     }
 
@@ -43,48 +35,33 @@ public class PlayerCharacterController : MonoBehaviour, IMover, IPlayer
 
     void Update()
     {
-        if (_playerCharacter.IsEnabled())
-            _playerCharacter.Update();
+        if (_player.IsEnabled())
+            _player.Update();
     }
 
     void FixedUpdate()
     {
-        _rigid2D.velocity = _playerCharacter.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
-        _playerCharacter.FixedUpdate();
+        _rigid2D.velocity = _player.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        _player.FixedUpdate();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        _playerCharacter.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
+        _player.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
     }
 
-    public void Erase()
+    public override void Erase()
     {
         _spriteRenderer.enabled = false;
         _rigid2D.simulated = false;
-        _playerCharacter.Erase();
+        base.Erase();
     }
 
-    public bool IsEnabled()
-    {
-        return _playerCharacter.IsEnabled();
-    }
-
-    public bool IsInvincible()
-    {
-        return _playerCharacter.IsInvincible();
-    }
-
-    public void TurnInvincible(uint frames)
-    {
-        _playerCharacter.TurnInvincible(frames);
-    }
-
-    public void Spawned()
+    public override void Spawned()
     {
         _spriteRenderer.enabled = true;
         _rigid2D.simulated = true;
-        _playerCharacter.Spawned();
+        base.Spawned();
     }
 }
 
