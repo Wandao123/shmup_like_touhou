@@ -3,19 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public enum PlayerID
+public enum EnemyID
 {
-    // 自機。
-    Reimu,
-    Marisa,
-    Sanae,
-    // オプション。
-    ReimuOption,
-    MarisaOption,
-    SanaeOption
-}
+    SmallRedFairy,
+    SmallBlueFairy
+};
 
-public class PlayerGenerator : MoverGenerator<PlayerController, PlayerID>
+public class EnemyGenerator : MoverGenerator<EnemyController, EnemyID>
 {
     private Vector2Int _characterSize;  // 本来はreadonlyにしたいところだが、MonoBehaviourを継承したクラスではコンストラクタが呼べないため、工夫が必要。
 
@@ -23,7 +17,7 @@ public class PlayerGenerator : MoverGenerator<PlayerController, PlayerID>
 
     void Awake()
     {
-        var prefab = Addressables.LoadAssetAsync<GameObject>(((PlayerID)0).ToString()).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
+        var prefab = Addressables.LoadAssetAsync<GameObject>(((EnemyID)0).ToString()).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
         Vector2 size = prefab.GetComponent<SpriteRenderer>().bounds.size;
         _characterSize = Vector2Int.RoundToInt(size);
         if (size - _characterSize != Vector2.zero)

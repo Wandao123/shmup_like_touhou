@@ -108,7 +108,7 @@ public abstract class Mover : IMover
             {
                 ++_existingCounter;
                 if (!isInside())
-                    _enabled = false;
+                    Erase();
             };
         else
             disableIfOutside = () => {};
@@ -158,6 +158,8 @@ public abstract class Mover : IMover
 
     public void Erase()
     {
+        _spriteRenderer.enabled = false;
+        _rigid2D.simulated = false;
         _enabled = false;
     }
 
@@ -185,6 +187,8 @@ public abstract class Mover : IMover
 
     protected virtual void spawned()
     {
+        _spriteRenderer.enabled = true;
+        _rigid2D.simulated = true;
         _enabled = true;
 	    _existingCounter = 0;
     }
@@ -257,15 +261,10 @@ public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
                 child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
                 return mover;
             }
-        var prefab = Addressables.LoadAssetAsync<GameObject>(makePath(id)).WaitForCompletion();
+        var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
         var newObject = Instantiate(prefab, position, Quaternion.identity) as GameObject;
         newObject.name = prefab.name;
         newObject.transform.parent = this.transform;
         return newObject.GetComponent<TMoverController>();
-    }
-
-    protected string makePath(ID id)
-    {
-        return "Assets/Prefabs/" + id.ToString() + ".prefab";
     }
 }

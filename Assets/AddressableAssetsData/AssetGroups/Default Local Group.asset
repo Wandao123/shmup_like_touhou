@@ -18,27 +18,39 @@ MonoBehaviour:
   m_GUID: 86e2bbc432b48c542ade7d9c30eeaca4
   m_SerializeEntries:
   - m_GUID: d95eece89f7970b4e8e0485695c3e56b
-    m_Address: Assets/images/Reimudot.png
+    m_Address: ReimuImage
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: c2f21c6f0722b254fa56b990b0f88552
-    m_Address: Assets/images/Marisadot.png
+    m_Address: MarisaImage
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: ab0bf31dae5215b4a8b8186f32e809a5
-    m_Address: Assets/images/Sanaedot.png
+    m_Address: SanaeImage
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 020c76a068b6d61498bd96ed1734bdd9
-    m_Address: Assets/Prefabs/Marisa.prefab
+    m_Address: Marisa
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: f8bb7fd48749fa44ab26657fd2c70943
-    m_Address: Assets/Prefabs/Reimu.prefab
+    m_Address: Reimu
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 2a91964608ccb9243b15e52b5d9ea996
-    m_Address: Assets/Prefabs/Sanae.prefab
+    m_Address: Sanae
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d3150a5d994621d48820eb7cb77f57b2
+    m_Address: EnemyImage
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 4924d5cea898cd6808e19373591293a6
+    m_Address: SmallBlueFairy
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: f4c6daafcbe748f9c8f75a52facdcb18
+    m_Address: SmallRedFairy
     m_ReadOnly: 0
     m_SerializedLabels: []
   m_ReadOnly: 0

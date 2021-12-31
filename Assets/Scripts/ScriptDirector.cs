@@ -5,10 +5,12 @@ using UnityEngine;
 public class ScriptDirector : MonoBehaviour
 {
     private Vector2Int _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
-    private Vector2Int _characterSize;
+    private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     [SerializeField]
     private PlayerGenerator _playerGenerator;
+    [SerializeField]
+    private EnemyGenerator _enemyGenerator;
     private PlayerController _player;
 
     public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
@@ -29,7 +31,8 @@ public class ScriptDirector : MonoBehaviour
 
     void Start()
     {
-        _characterSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
+        _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _playerSize.y));
         StartCoroutine(playerScript());
     }
 
@@ -41,9 +44,9 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator playerScript()
     {
-        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _characterSize.y));
         _player.Spawned();
         _player.TurnInvincible(180);
+        StartCoroutine(enemyScript());
         for (var i = 1; i <= 210; i++)
             yield return null;
         _player.Position = Vector2.zero;
@@ -52,8 +55,22 @@ public class ScriptDirector : MonoBehaviour
         _player.Erase();
         for (var i = 1; i <= 60; i++)
             yield return null;
-        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _characterSize.y));
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _playerSize.y));
         _player.Spawned();
         Debug.Log("Script has finished.");
+    }
+
+    private IEnumerator enemyScript()
+    {
+        var smallFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y * 0.5f));
+        smallFairy.Spawned(1.0f, -0.5f * Mathf.PI, 10);
+        for (var i = 1; i <= 120; i++)
+            yield return null;
+        for (var i = 0; i <= 360; i++)
+        {
+            smallFairy.Angle += Mathf.PI / 180;
+            yield return null;
+        }
+        smallFairy.Speed = 0.0f;
     }
 }

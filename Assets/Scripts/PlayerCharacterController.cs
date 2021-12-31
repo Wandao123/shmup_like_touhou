@@ -11,7 +11,8 @@ public class PlayerCharacterController : PlayerController
     [SerializeField]
     private float _lowSpeed = 0.0f;
     [SerializeField]
-    private string _path = "";
+    private string _reference;
+    //private AssetReferenceGameObject _reference;  // プレハブは参照できるが、スプライトは何故かできない。
     private SpriteRenderer _spriteRenderer;
     private Rigidbody2D _rigid2D;
 
@@ -21,12 +22,12 @@ public class PlayerCharacterController : PlayerController
     //       https://light11.hatenadiary.com/entry/2021/04/13/194929
     void Awake()
     {
-        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_path).WaitForCompletion();
+        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();
         _rigid2D.simulated = false;
-        _mover = new PlayerCharacter(transform, _spriteRenderer, _rigid2D, _highSpeed, _lowSpeed, spritesList);
+        _mover = new PlayerCharacter(transform, _spriteRenderer, _rigid2D, spritesList, _highSpeed, _lowSpeed);
     }
 
     void Start()
@@ -47,21 +48,10 @@ public class PlayerCharacterController : PlayerController
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
-    }
-
-    public override void Erase()
-    {
-        _spriteRenderer.enabled = false;
-        _rigid2D.simulated = false;
-        base.Erase();
-    }
-
-    public override void Spawned()
-    {
-        _spriteRenderer.enabled = true;
-        _rigid2D.simulated = true;
-        base.Spawned();
+        if (collision.gameObject.GetComponent<EnemyController>())
+            _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<EnemyController>() as IMover);
+        //else if (collision.gameObject.GetComponent<BulletController>())
+        //    _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<BulletController>() as IMover);
     }
 }
 
@@ -78,10 +68,10 @@ class PlayerCharacter : Player
     /// <param name="transform">委譲される位置</param>
     /// <param name="spriteRenderer">委譲されるスプライト</param>
     /// <param name="rigid2D">委譲される物理演算クラス</param>
+    /// <param name="spritesList">切り分けられた画像のリスト</param>
     /// <param name="highSpeed">高速移動時の速さ（単位：ドット毎フレーム）</param>
     /// <param name="lowSpeed">低速移動時の速さ（単位：ドット毎フレーム）</param>
-    /// <param name="spritesList">切り分けられた画像のリスト</param>
-    public PlayerCharacter(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D, float highSpeed, float lowSpeed, in IList<Sprite> spritesList)
+    public PlayerCharacter(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D, in IList<Sprite> spritesList, float highSpeed, float lowSpeed)
         : base(transform, spriteRenderer, rigid2D)
     {
         _highSpeed = highSpeed;
