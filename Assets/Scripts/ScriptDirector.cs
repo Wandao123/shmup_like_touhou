@@ -5,7 +5,7 @@ using UnityEngine;
 public class ScriptDirector : MonoBehaviour
 {
     private Vector2Int _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
-    private Vector2Int _playerSize;
+    private Vector2Int _characterSize;
     private ShmupInputActions _inputActions;
     [SerializeField]
     private PlayerGenerator _playerGenerator;
@@ -29,9 +29,9 @@ public class ScriptDirector : MonoBehaviour
 
     void Start()
     {
-        _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().PlayerSize;
+        _characterSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
         _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
-        _player.Position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
+        _player.Position = new Vector2(0, _screenBottomLeft.y + _characterSize.y);
         StartCoroutine(playerScript());
     }
 
@@ -51,7 +51,7 @@ public class ScriptDirector : MonoBehaviour
         for (var i = 1; i <= 120; i++)
             yield return null;
         _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
-        _player.Position = new Vector2(0, _screenBottomLeft.y + _playerSize.y);
+        _player.Position = new Vector2(0, _screenBottomLeft.y + _characterSize.y);
         _player.Spawned();
         Debug.Log("Script has finished.");
     }

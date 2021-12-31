@@ -93,8 +93,8 @@ class PlayerCharacter : Player
         _clipFramImageFunc = clipFromImageClosure();
         float width = spriteRenderer.bounds.size.x;
         float height = spriteRenderer.bounds.size.y;
-        ScreenMinimum = Camera.main.ViewportToWorldPoint(new Vector2(0, 0)) + (new Vector3(width, height, 0) * 0.5f);
-        ScreenMaximum = Camera.main.ViewportToWorldPoint(new Vector2(1, 1)) - (new Vector3(width, height, 0) * 0.5f);
+        ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) + (new Vector3(width, height, 0) * 0.5f);
+        ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) - (new Vector3(width, height, 0) * 0.5f);
     }
 
     public override Vector2 Velocity
@@ -107,7 +107,7 @@ class PlayerCharacter : Player
     {
         base.FixedUpdate();
 
-        // 速度の更新と移動制限。速度の更新はMoverでも行われるが、どうしても三角関数の計算でずれるので、自機クラスではここで再設定する。移動制限は速度を変化させた場合のみで、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いである。
+        // 速度の更新と移動制限。速度の更新はMoverでも行われるが、どうしても三角関数の計算でずれるので、自機クラスではここで再設定する。移動制限は速度を変化させた場合のみで、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
         var nextPosition = this.Position + this.Velocity;
         var velocity = this.Velocity;
         if (nextPosition.x < ScreenMinimum.x || nextPosition.x > ScreenMaximum.x)
@@ -115,11 +115,6 @@ class PlayerCharacter : Player
         if (nextPosition.y < ScreenMinimum.y || nextPosition.y > ScreenMaximum.y)
             velocity.y = 0.0f;
         _rigid2D.velocity = velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
- 
-        /*_rigid2D.MovePosition(_rigid2D.position + new Vector2(
-            Mathf.Clamp(_rigid2D.position.x, ScreenMinimum.x, ScreenMaximum.x),
-            Mathf.Clamp(_rigid2D.position.y, ScreenMinimum.y, ScreenMaximum.y)
-        ));*/
     }
 
     protected override Sprite clipFromImage(int countedFrames)

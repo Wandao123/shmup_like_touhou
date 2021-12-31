@@ -17,20 +17,18 @@ public enum PlayerID
 
 public class PlayerGenerator : MoverGenerator<PlayerController, PlayerID>
 {
-    private Vector2Int _playerSize;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
+    private Vector2Int _characterSize;  // 本来はreadonlyにしたいところだが、MonoBehaviourを継承したクラスではコンストラクタが呼べないため、工夫が必要。
 
-    public Vector2Int PlayerSize { get => _playerSize; }
+    public Vector2Int CharacterSize { get => _characterSize; }
 
     void Awake()
     {
         var prefab = Addressables.LoadAssetAsync<GameObject>(makePath((PlayerID)0)).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
         Vector2 size = prefab.GetComponent<SpriteRenderer>().bounds.size;
-        _playerSize = Vector2Int.RoundToInt(size);
-        if (size - _playerSize != Vector2.zero)
+        _characterSize = Vector2Int.RoundToInt(size);
+        if (size - _characterSize != Vector2.zero)
             Debug.LogWarning("The width or the height of the sprite are not integer numbers: " + size.ToString());
 
-        _objectNoun = "";
-        
         // 予めオブジェクトを生成しておく場合はここに記述。
     }
 }

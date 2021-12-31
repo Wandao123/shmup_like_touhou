@@ -59,8 +59,8 @@ public abstract class Mover : IMover
         _hitPoint = hitPoint;
         float width = spriteRenderer.bounds.size.x;
         float height = spriteRenderer.bounds.size.y;
-        ScreenMinimum = Camera.main.ViewportToWorldPoint(new Vector2(0, 0)) - (new Vector3(width, height, 0) * 0.5f);
-        ScreenMaximum = Camera.main.ViewportToWorldPoint(new Vector2(1, 1)) + (new Vector3(width, height, 0) * 0.5f);
+        ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) - (new Vector3(width, height, 0) * 0.5f);
+        ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) + (new Vector3(width, height, 0) * 0.5f);
 
         if (autoDisabling)
             disableIfOutside = () =>
@@ -175,15 +175,12 @@ public abstract class Mover : IMover
 /// <remarks>
 /// Controllerクラス（プレハブから複製されたGameObjectにアタッチされているもの）を子オブジェクトとして所有する。
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
-/// 列挙型IDの要素は複製対象のプレハブ名の形容詞部分か固有名詞とする。
+/// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
 public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
     where MoverController : IMover
     where ID : Enum
 {
-    // フィールドの初期化は子クラスのAwakeで行え。
-    protected string _objectNoun = "";  // IDの要素名を形容詞で名付けた際に、生成対象クラスの名前を補完する文字列。
-
     public IList<MoverController> ObjectsList
     {
         get {
@@ -206,7 +203,7 @@ public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
     public MoverController GenerateObject(ID id)
     {
         foreach (Transform child in transform)
-            if (child.name == id.ToString() + _objectNoun && child.GetComponent<MoverController>() is var mover && !mover.IsEnabled())
+            if (child.name == id.ToString() && child.GetComponent<MoverController>() is var mover && !mover.IsEnabled())
                 return mover;
         var prefab = Addressables.LoadAssetAsync<GameObject>(makePath(id)).WaitForCompletion();
         var newObject = Instantiate(prefab) as GameObject;
@@ -217,6 +214,6 @@ public abstract class MoverGenerator<MoverController, ID> : MonoBehaviour
 
     protected string makePath(ID id)
     {
-        return "Assets/Prefabs/" + id.ToString() + _objectNoun + ".prefab";
+        return "Assets/Prefabs/" + id.ToString() + ".prefab";
     }
 }
