@@ -26,7 +26,7 @@ public class PlayerCharacterController : PlayerController
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();
         _rigid2D.simulated = false;
-        _player = new PlayerCharacter(transform, _spriteRenderer, _rigid2D, _highSpeed, _lowSpeed, spritesList);
+        _mover = new PlayerCharacter(transform, _spriteRenderer, _rigid2D, _highSpeed, _lowSpeed, spritesList);
     }
 
     void Start()
@@ -36,18 +36,18 @@ public class PlayerCharacterController : PlayerController
 
     void Update()
     {
-        if (_player.IsEnabled())
-            _player.Update();
+        if (_mover.IsEnabled())
+            _mover.Update();
     }
 
     void FixedUpdate()
     {
-        _player.FixedUpdate();
+        _mover.FixedUpdate();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        _player.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
+        _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
     }
 
     public override void Erase()

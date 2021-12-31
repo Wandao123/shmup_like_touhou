@@ -30,8 +30,6 @@ public class ScriptDirector : MonoBehaviour
     void Start()
     {
         _characterSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
-        _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
-        _player.Position = new Vector2(0, _screenBottomLeft.y + _characterSize.y);
         StartCoroutine(playerScript());
     }
 
@@ -43,15 +41,18 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator playerScript()
     {
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _characterSize.y));
         _player.Spawned();
         _player.TurnInvincible(180);
         for (var i = 1; i <= 210; i++)
             yield return null;
-        _player.Erase();
-        for (var i = 1; i <= 120; i++)
+        _player.Position = Vector2.zero;
+        for (var i = 1; i <= 60; i++)
             yield return null;
-        _player = _playerGenerator.GenerateObject(PlayerID.Reimu);
-        _player.Position = new Vector2(0, _screenBottomLeft.y + _characterSize.y);
+        _player.Erase();
+        for (var i = 1; i <= 60; i++)
+            yield return null;
+        _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0, _screenBottomLeft.y + _characterSize.y));
         _player.Spawned();
         Debug.Log("Script has finished.");
     }
