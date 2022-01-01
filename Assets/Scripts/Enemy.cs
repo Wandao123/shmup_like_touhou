@@ -45,7 +45,7 @@ public abstract class Enemy : Mover, IEnemy
     {
         _hitPoint -= mover.Damage;
         if (_hitPoint <= 0)
-            _enabled = false;
+            Erase();
         else
             _isDamaged = true;
     }

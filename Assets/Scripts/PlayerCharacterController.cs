@@ -48,10 +48,7 @@ public class PlayerCharacterController : PlayerController
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<EnemyController>())
-            _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<EnemyController>() as IMover);
-        //else if (collision.gameObject.GetComponent<BulletController>())
-        //    _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<BulletController>() as IMover);
+        _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<IMover>() as IMover);
     }
 }
 

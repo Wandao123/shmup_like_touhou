@@ -43,8 +43,7 @@ public class NormalEnemyController : EnemyController
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<PlayerCharacterController>())
-            _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<PlayerCharacterController>() as IMover);
+        _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<IMover>() as IMover);
     }
 }
 

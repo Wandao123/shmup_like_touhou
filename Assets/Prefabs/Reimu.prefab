@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1670645704118649642}
   - component: {fileID: 1670645704118649643}
   - component: {fileID: 1670645704118649645}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Reimu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,8 +71,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1441738093
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 1554008646097967430, guid: d95eece89f7970b4e8e0485695c3e56b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

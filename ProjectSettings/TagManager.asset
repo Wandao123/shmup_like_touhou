@@ -13,11 +13,11 @@ TagManager:
   - UI
   - 
   - 
+  - Enemy
   - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - EnemyBullet
+  - PlayerBullet
   - 
   - 
   - 
@@ -40,4 +40,22 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 397914251
+    locked: 0
+  - name: Enemy
+    uniqueID: 4136653033
+    locked: 0
+  - name: Effect
+    uniqueID: 2459070081
+    locked: 0
+  - name: Player
+    uniqueID: 2853229203
+    locked: 0
+  - name: EnemyBullet
+    uniqueID: 1740261389
+    locked: 0
+  - name: PlayerBullet
+    uniqueID: 879306377
     locked: 0

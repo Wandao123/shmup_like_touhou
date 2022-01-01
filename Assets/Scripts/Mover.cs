@@ -116,8 +116,13 @@ public abstract class Mover : IMover
 
     public Vector2 Position
     {
-        get => _transform.position;
-        set => _rigid2D.position = value;
+        get { return _transform.position; }
+        set {
+            if (_rigid2D.simulated)
+                _rigid2D.position = value;
+            else
+                _transform.position = value;
+        }
     }
 
     public float Speed

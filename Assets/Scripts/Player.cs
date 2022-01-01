@@ -66,7 +66,7 @@ public abstract class Player : Mover, IPlayer
     {
         if (_invincibleCounter > 0)
             return;
-        _enabled = false;
+        Erase();
         --_hitPoint;
     }
 
