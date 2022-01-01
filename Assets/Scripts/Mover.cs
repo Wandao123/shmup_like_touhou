@@ -133,7 +133,7 @@ public abstract class Mover : IMover
                 _speed = value;
         }
     }
-    public float Angle
+    public virtual float Angle
     {
         get { return _angle; }
         set {
@@ -153,7 +153,7 @@ public abstract class Mover : IMover
     /// <summary>MonoBehaviorのFixedUpdateから呼ばれる処理。</summary>
     public virtual void FixedUpdate()
     {
-        _rigid2D.velocity = new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
         _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
         disableIfOutside();
     }

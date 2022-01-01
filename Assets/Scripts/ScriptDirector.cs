@@ -10,9 +10,13 @@ public class ScriptDirector : MonoBehaviour
     private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     [SerializeField]
+    private EnemyGenerator _enemyGenerator;
+    [SerializeField]
     private PlayerGenerator _playerGenerator;
     [SerializeField]
-    private EnemyGenerator _enemyGenerator;
+    private BulletGenerator _enemyBulletGenerator;
+    [SerializeField]
+    private BulletGenerator _playerBulletGenerator;
     private PlayerController _player = null;
 
     public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
@@ -85,7 +89,7 @@ public class ScriptDirector : MonoBehaviour
             while (true)
             {
                 var velocity = _inputActions.Player.Move.ReadValue<Vector2>();
-                _player.SlowMode = _inputActions.Player.Slow.WasPressedThisFrame();
+                _player.SlowMode = _inputActions.Player.Slow.IsPressed();
                 _player.Velocity = velocity;
                 yield return null;
             }
@@ -95,15 +99,14 @@ public class ScriptDirector : MonoBehaviour
         {
             while (true)
             {
-                if (_inputActions.Player.Shot.WasPressedThisFrame())
+                if (_inputActions.Player.Shot.IsPressed())
                 {
-                    //GeneratePlayerBullet
+                    _playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
-                else
-                {
-                    yield return null;
-                }
+                yield return null;
             }
         }
 
@@ -139,11 +142,14 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        var smallFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y * 0.5f));
-        smallFairy.Spawned(1.0f, -0.5f * Mathf.PI, 10);
+        var smallFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        smallFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
         {
+            if (i % 30 == 0)
+                _enemyBulletGenerator.GenerateObject(BulletID.SmallRedBullet, smallFairy.Position)
+                .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallFairy.Position.y, _player.Position.x - smallFairy.Position.x));
             smallFairy.Angle += Mathf.PI / 180;
             yield return null;
         }

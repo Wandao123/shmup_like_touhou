@@ -50,9 +50,7 @@ public class NormalEnemyController : EnemyController
 /// <summary>雑魚敵クラス。</summary>
 class NormalEnemy : Enemy
 {
-    private Sprite[,] _clips;
-    private Func<int, Sprite> _clipFramImageFunc;
-    private readonly Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ縮めた座標。
+    private readonly Sprite[,] _clips;
 
     /// <summary>雑魚敵の処理を委譲。</summary>
     /// <param name="transform">委譲される位置</param>

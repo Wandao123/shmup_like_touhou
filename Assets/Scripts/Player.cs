@@ -30,7 +30,7 @@ public abstract class Player : Mover, IPlayer
     /// <param name="spriteRenderer">委譲されるスプライト</param>
     /// <param name="rigid2D">委譲される物理演算クラス</param>
     public Player(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D)
-        : base(transform, spriteRenderer, rigid2D, 0.0f, -0.5f * Mathf.PI, 1, 3, false)
+        : base(transform, spriteRenderer, rigid2D, 0.0f, 0.5f * Mathf.PI, 1, 3, false)
     {}
 
     public bool SlowMode { get; set; } = false;  // 低速移動か否か。
@@ -76,7 +76,7 @@ public abstract class Player : Mover, IPlayer
             return;
         base.spawned();
         this.Speed = 0.0f;
-        this.Angle = -0.5f * Mathf.PI;
+        this.Angle = 0.5f * Mathf.PI;
         _velocity = Vector2.zero;
         var color = _spriteRenderer.color;
         color.a = 0.75f;

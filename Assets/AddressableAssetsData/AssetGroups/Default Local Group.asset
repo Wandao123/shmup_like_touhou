@@ -53,6 +53,66 @@ MonoBehaviour:
     m_Address: SmallRedFairy
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: 3badc40d9298bbf4ea3913ecde327330
+    m_Address: ReimuShot
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e8bc906cd873563f98e7ebad1b985d8e
+    m_Address: ReimuNormalBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7e02441e76ad01b479ae65efdee23d49
+    m_Address: AllBullets
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 4e31c48ad3d4e274da44e348b2be5b24
+    m_Address: SmallRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0a9515857f0c5d3a5be241eccbc7012a
+    m_Address: SmallBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9495ef318a5480122baf27421cabc805
+    m_Address: TinyBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a25b4bd90cb34269490dce5ec5358643
+    m_Address: TinyRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 17ac15f036aa820ebb99d189a941a09a
+    m_Address: MiddleRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0678768a8d6a73c8d9eb486eb9d63e4c
+    m_Address: MiddleBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 24598a6803974a649a941aa606d90ca6
+    m_Address: LargeBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 95a22a7aaf530007fa82ec0948ccf366
+    m_Address: LargeRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: fdcfd4696eafb807f9719b733c61320d
+    m_Address: ScaleRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e12ffd115468d9699949061cfaad1d0d
+    m_Address: ScaleBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e9c6893fcbeca3e42acdeab88f1d1374
+    m_Address: RiceBlueBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 53496d3358c862ec1b9b7d706b8140a1
+    m_Address: RiceRedBullet
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1ba928bb3ecbf2d40880331173864333, type: 2}
   m_SchemaSet:

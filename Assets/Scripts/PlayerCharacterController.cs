@@ -55,7 +55,7 @@ public class PlayerCharacterController : PlayerController
 /// <summary>自機キャラクタクラス。</summary>
 class PlayerCharacter : Player
 {
-    private Sprite[,] _clips;
+    private readonly Sprite[,] _clips;
     private float _highSpeed;
     private float _lowSpeed;
     private Func<int, Sprite> _clipFramImageFunc;
