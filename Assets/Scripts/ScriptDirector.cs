@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using MoonSharp.Interpreter;
 
 public class ScriptDirector : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class ScriptDirector : MonoBehaviour
     [SerializeField]
     private BulletGenerator _playerBulletGenerator;
     private PlayerController _player = null;
+    private Script _script;
 
     public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
     public Vector2Int ScreenTopRight { get => _screenTopRight; }
@@ -33,6 +35,12 @@ public class ScriptDirector : MonoBehaviour
             
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
+
+        _script = new Script();
+        registerClasses();
+        registerConstants();
+        //registerGlueFunctions();
+        UserData.RegisterAssembly();
     }
 
     void Start()
@@ -40,11 +48,56 @@ public class ScriptDirector : MonoBehaviour
         _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
         StartCoroutine(playerScript());
         StartCoroutine(stageScript());
+
+        //DynValue result = _script.DoString("GenerateEnemy(EnemyID.SmallBlueFairy, ScreenWidth / 2, ScreenHeight / 2, 0, math.pi / 2, 8)");
+        _script.DoFile("main.lua");
     }
 
     void Update()
     {
         
+    }
+
+    private void registerClasses()
+    {
+        UserData.RegisterType<IBullet>();
+        UserData.RegisterType<BulletID>();
+        UserData.RegisterType<IEnemy>();
+        UserData.RegisterType<EnemyID>();
+        UserData.RegisterType<IPlayer>();
+        UserData.RegisterType<PlayerID>();
+    }
+
+    private void registerConstants()
+    {
+        _script.Globals["ScreenWidth"] = 2 * _screenTopRight.x;
+        _script.Globals["ScreenHeight"] = 2 * _screenTopRight.y;
+        _script.Globals["PlayerWidth"] = _playerSize.x;
+	    _script.Globals["PlayerHeight"] = _playerSize.y;
+        _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
+        _script.Globals["EnemyID"] = UserData.CreateStatic<EnemyID>();
+        _script.Globals["PlayerID"] = UserData.CreateStatic<PlayerID>();
+    }
+
+    private void registerGlueFunctions()
+    {
+        // 座標変換。
+        // Unityの座標系と異なり、Luaでは画面の左上を原点に取った上で、左から右への向きでx軸、上から下への向きでy軸を定める。
+        Vector2 transformIntoVector2From(float posX, float posY)
+        {
+            var position = new System.Numerics.Complex(posX, posY);
+            position = System.Numerics.Complex.Conjugate(position) + new System.Numerics.Complex(-_screenTopRight.x, +_screenTopRight.y);
+            return new Vector2((float)position.Real, (float)position.Imaginary);
+        }
+
+        Func<EnemyID, float, float, float, float, int, IEnemy> generateEnemy =
+        (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
+        {
+            var newObject = _enemyGenerator.GenerateObject(id, transformIntoVector2From(posX, posY));
+            newObject.Spawned(speed, angle, hitPoint);
+            return newObject;
+        };
+        _script.Globals["GenerateEnemy"] = generateEnemy;
     }
 
     private IEnumerator wait(uint numFrames)

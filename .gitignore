@@ -69,4 +69,4 @@ crashlytics-build.properties
 
 # Additional settings
 /[Aa]ssets/Plugins/GitHub*
-
+/[Aa]ssets/Plugins/MoonSharp/*
