@@ -4,9 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using XLua;
+using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Loaders;
 
-[CSharpCallLua]
 public enum CommandID : int {
     // メニューで使用。キーの割り当てを変更不可。
     /*OK,
@@ -28,12 +28,22 @@ public enum CommandID : int {
     SIZE  // 要素数を取得するためのダミー。
 }
 
-// 参考：https://light11.hatenadiary.com/entry/2021/06/02/204557
-//       https://light11.hatenadiary.com/entry/2021/06/21/203149
-//       https://baba-s.hatenablog.com/entry/2017/09/26/090000
-//       https://masakami.com/archives/2020/05/09/648/
+// 参考：https://qiita.com/sevenstartears/items/b8ebd3939211b68fcaa4
 public class ScriptDirector : MonoBehaviour
 {
+    private class MyCustomScriptLoader : ScriptLoaderBase
+    {
+        public override object LoadFile(string file, Table globalContext)
+        {
+            return string.Format("print ([[A request to load '{0}' has been made]])", file);
+        }
+
+        public override bool ScriptFileExists(string name)
+        {
+            return true;
+        }
+    }
+
     private Vector2Int _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
     private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
@@ -47,7 +57,8 @@ public class ScriptDirector : MonoBehaviour
     [SerializeField]
     private BulletGenerator _playerBulletGenerator;
     private PlayerController _player = null;
-    private LuaEnv _luaenv;
+    private Script _script;
+    //private const string LuaPath = "Assets/lua_scripts";
 
     public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
     public Vector2Int ScreenTopRight { get => _screenTopRight; }
@@ -75,10 +86,21 @@ public class ScriptDirector : MonoBehaviour
             { CommandID.Pause, _inputActions.Player.Pause.IsPressed }
         };
 
-        _luaenv = new LuaEnv();
-        _luaenv.AddLoader(customLoader);
+        _script = new Script();
+        //_script.Options.ScriptLoader = new EmbeddedResourcesScriptLoader();
+        //((ScriptLoaderBase)_script.Options.ScriptLoader).ModulePaths = ScriptLoaderBase.UnpackStringPaths("lua_scripts/?;lua_scripts/?.lua");
+        /*var textAssets = Resources.LoadAll<TextAsset>(LuaPath);
+        var scripts = textAssets.ToDictionary(ta => ta.name, ta => ta.text);
+        var loader = new MoonSharp.Interpreter.Loaders.UnityAssetsScriptLoader(scripts) {ModulePaths = new[] {"?"}};
+        _script = new Script {Options = {ScriptLoader = loader}};*/
+        _script.Options.ScriptLoader = new MyCustomScriptLoader() 
+        { 
+            ModulePaths = new string[] { "Assets/lua_scripts/?.lua" } 
+        };
+        registerClasses();
         registerConstants();
         registerGlueFunctions();
+        UserData.RegisterAssembly();
     }
 
     void Start()
@@ -88,7 +110,13 @@ public class ScriptDirector : MonoBehaviour
         //StartCoroutine(stageScript());
 
         //_luaenv.DoString("require 'Assets/lua_scripts/initialization_for_libraries.lua'");  // ライブラリに依存した初期化。ライブラリ毎の差異を吸収するため。
-        _luaenv.DoString("require 'main'");
+        DynValue res = _script.DoString(@"
+            dofile 'main'
+        ");
+        //_script.DoFile("main");
+        //DynValue res = _script.DoString("require 'main'");
+        //DynValue res = _script.Call(_script.Globals["Main"]);
+        Debug.Log(res);
         //_luaenv.DoString("require 'main'");
         //_luaenv.DoString("require 'Assets/lua_scripts/reimu.lua'");
         //StartCoroutine(_luaenv.Global.Get<Func<IEnumerator>>("RunPlayerScript")());
@@ -96,13 +124,12 @@ public class ScriptDirector : MonoBehaviour
 
     void Update()
     {
-        if (_luaenv != null)
-            _luaenv.Tick();
+        
     }
 
     void OnDestroy()
     {
-        _luaenv.Dispose();
+        
     }
 
     private byte[] customLoader(ref string filepath)
@@ -113,12 +140,25 @@ public class ScriptDirector : MonoBehaviour
             return null;
     }
 
+    private void registerClasses()
+    {
+        UserData.RegisterType<IBullet>();
+        UserData.RegisterType<BulletID>();
+        UserData.RegisterType<IEnemy>();
+        UserData.RegisterType<EnemyID>();
+        UserData.RegisterType<IPlayer>();
+        UserData.RegisterType<PlayerID>();
+    }
+
     private void registerConstants()
     {
-        _luaenv.Global.Set("ScreenWidth", 2 * _screenTopRight.x);
-        _luaenv.Global.Set("ScreenHeight", 2 * _screenTopRight.y);
-        _luaenv.Global.Set("PlayerWidth", _playerSize.x);
-        _luaenv.Global.Set("PlayerHeight", _playerSize.y);
+        _script.Globals["ScreenWidth"] = 2 * _screenTopRight.x;
+        _script.Globals["ScreenHeight"] = 2 * _screenTopRight.y;
+        _script.Globals["PlayerWidth"] = _playerSize.x;
+        _script.Globals["PlayerHeight"] = _playerSize.y;
+        _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
+        _script.Globals["EnemyID"] = UserData.CreateStatic<EnemyID>();
+        _script.Globals["PlayerID"] = UserData.CreateStatic<PlayerID>();
     }
 
     private void registerGlueFunctions()
@@ -139,7 +179,7 @@ public class ScriptDirector : MonoBehaviour
             newObject.Shot(speed, angle);
             return newObject;
         };
-        _luaenv.Global.Set("GenerateBullet", generateBullet);
+        _script.Globals["GenerateBullet"] = generateBullet;
 
         Func<BulletID, float, float, float, float, IBullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
@@ -148,7 +188,7 @@ public class ScriptDirector : MonoBehaviour
             newObject.Shot(speed, angle);
             return newObject;
         };
-        _luaenv.Global.Set("GeneratePlayerBullet", generatePlayerBullet);
+        _script.Globals["GeneratePlayerBullet"] = generatePlayerBullet;
 
         Func<EnemyID, float, float, float, float, int, IEnemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
@@ -157,7 +197,7 @@ public class ScriptDirector : MonoBehaviour
             newObject.Spawned(speed, angle, hitPoint);
             return newObject;
         };
-        _luaenv.Global.Set("GenerateEnemy", generateEnemy);
+        _script.Globals["GenerateEnemy"] = generateEnemy;
 
         Func<PlayerID, float, float, IPlayer> generatePlayer =
         (PlayerID id, float posX, float posY) =>
@@ -166,15 +206,15 @@ public class ScriptDirector : MonoBehaviour
             newObject.Spawned();
             return newObject;
         };
-        _luaenv.Global.Set("GeneratePlayer", generatePlayer);
+        _script.Globals["GeneratePlayer"] = generatePlayer;
 
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
-        _luaenv.Global.Set("GetKey", getKey);
+        _script.Globals["GetKey"] = getKey;
 
-        Func<IEnumerator, Coroutine> invokeStartCoroutine = (IEnumerator routine) => StartCoroutine(routine);
-        Action<Coroutine> invokeStopCoroutine = (Coroutine coroutine) => StopCoroutine(coroutine);
-        _luaenv.Global.Set("csStartCoroutine", invokeStartCoroutine);
-        _luaenv.Global.Set("csStopCoroutine", invokeStopCoroutine);
+        //Func<IEnumerator, Coroutine> invokeStartCoroutine = (IEnumerator routine) => StartCoroutine(routine);
+        //Action<Coroutine> invokeStopCoroutine = (Coroutine coroutine) => StopCoroutine(coroutine);
+        //_luaenv.Global.Set("csStartCoroutine", invokeStartCoroutine);
+        //_luaenv.Global.Set("csStopCoroutine", invokeStopCoroutine);
     }
 
     private IEnumerator wait(uint numFrames)
@@ -285,13 +325,4 @@ public class ScriptDirector : MonoBehaviour
         }
         smallFairy.Speed = 0.0f;
     }
-}
-
-public static class CoroutineConfig
-{
-    [LuaCallCSharp]
-    public static List<Type> LuaCallCSharp => new List<Type>
-    {
-        typeof(WaitForSeconds)
-    };
 }

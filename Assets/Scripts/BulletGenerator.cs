@@ -2,9 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using XLua;
 
-[LuaCallCSharp]
 public enum BulletID
 {
     // 敵弾。
