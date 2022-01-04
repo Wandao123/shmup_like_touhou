@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using XLua;
 
+[CSharpCallLua]
 public interface IPlayer : IMover
 {
     bool SlowMode { get; set; }

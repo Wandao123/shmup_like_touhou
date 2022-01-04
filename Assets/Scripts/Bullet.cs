@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using XLua;
 
+[CSharpCallLua]
 public interface IBullet: IMover
 {
     void Shot(float speed, float angle);

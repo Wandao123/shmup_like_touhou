@@ -70,3 +70,8 @@ crashlytics-build.properties
 # Additional settings
 /[Aa]ssets/Plugins/GitHub*
 /[Aa]ssets/Plugins/MoonSharp/*
+/[Aa]ssets/Plugins/WSA/*
+/[Aa]ssets/Plugins/x86/*
+/[Aa]ssets/Plugins/x86_64/*
+/[Aa]ssets/Plugins/xlua.bundle/*
+/[Aa]ssets/XLua/*
