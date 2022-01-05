@@ -44,8 +44,8 @@ public class ScriptDirector : MonoBehaviour
     private BulletGenerator _enemyBulletGenerator;
     [SerializeField]
     private BulletGenerator _playerBulletGenerator;
-    private PlayerController _player = null;
     private Script _script;
+    private PlayerController _player = null;
 
     public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
     public Vector2Int ScreenTopRight { get => _screenTopRight; }
@@ -104,22 +104,10 @@ public class ScriptDirector : MonoBehaviour
         
     }
 
-    // 座標変換。
-    // Unityの座標系と異なり、Luaでは画面の左上を原点に取った上で、左から右への向きでx軸、上から下への向きでy軸を定める。
-    private Vector2 transformIntoUnityCoordinateFromLua(float posX, float posY)
-    {
-        var position = new System.Numerics.Complex(posX, posY);
-        position = System.Numerics.Complex.Conjugate(position) + new System.Numerics.Complex(-_screenTopRight.x, +_screenTopRight.y);
-        return new Vector2((float)position.Real, (float)position.Imaginary);
-    }
-
-    private float transformIntoUnityAngleFromLua(float angle)
-    {
-        return -angle;
-    }
-
     private void registerClasses()
     {
+        UserData.RegisterType<Vector2>();
+        UserData.RegisterType<Vector2Int>();
         UserData.RegisterType<BulletID>();
         UserData.RegisterType<CommandID>();
         UserData.RegisterType<EnemyID>();
@@ -128,14 +116,21 @@ public class ScriptDirector : MonoBehaviour
 
     private void registerConstants()
     {
-        _script.Globals["ScreenWidth"] = 2 * _screenTopRight.x;
-        _script.Globals["ScreenHeight"] = 2 * _screenTopRight.y;
-        _script.Globals["PlayerWidth"] = _playerSize.x;
-        _script.Globals["PlayerHeight"] = _playerSize.y;
+        _script.Globals["ScreenTopRight"] = _screenTopRight;
+        _script.Globals["ScreenBottomLeft"] = _screenBottomLeft;
+        _script.Globals["ScreenTopLeft"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0, 1)));
+        _script.Globals["ScreenBottomRight"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(1, 0)));
+        _script.Globals["ScreenCenter"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.5f)));
+        _script.Globals["ScreenTop"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 1.0f)));
+        _script.Globals["ScreenBottom"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.0f)));
+        _script.Globals["ScreenLeft"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.0f, 0.5f)));
+        _script.Globals["ScreenRight"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(1.0f, 0.5f)));
+        _script.Globals["PlayerSize"] = _playerSize;
         _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
         _script.Globals["CommandID"] = UserData.CreateStatic<CommandID>();
         _script.Globals["EnemyID"] = UserData.CreateStatic<EnemyID>();
         _script.Globals["PlayerID"] = UserData.CreateStatic<PlayerID>();
+        _script.Globals["Vector2"] = typeof(Vector2);
     }
 
     private void registerGlueFunctions()
@@ -143,8 +138,8 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, IBullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _enemyBulletGenerator.GenerateObject(id, transformIntoUnityCoordinateFromLua(posX, posY));
-            newObject.Shot(speed, transformIntoUnityAngleFromLua(angle));
+            var newObject = _enemyBulletGenerator.GenerateObject(id, new Vector2(posX, posY));
+            newObject.Shot(speed, angle);
             return newObject;
         };
         _script.Globals["GenerateBullet"] = generateBullet;
@@ -152,8 +147,8 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, IBullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _playerBulletGenerator.GenerateObject(id, transformIntoUnityCoordinateFromLua(posX, posY));
-            newObject.Shot(speed, transformIntoUnityAngleFromLua(angle));
+            var newObject = _playerBulletGenerator.GenerateObject(id, new Vector2(posX, posY));
+            newObject.Shot(speed, angle);
             return newObject;
         };
         _script.Globals["GeneratePlayerBullet"] = generatePlayerBullet;
@@ -161,8 +156,8 @@ public class ScriptDirector : MonoBehaviour
         Func<EnemyID, float, float, float, float, int, IEnemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
         {
-            var newObject = _enemyGenerator.GenerateObject(id, transformIntoUnityCoordinateFromLua(posX, posY));
-            newObject.Spawned(speed, transformIntoUnityAngleFromLua(angle), hitPoint);
+            var newObject = _enemyGenerator.GenerateObject(id, new Vector2(posX, posY));
+            newObject.Spawned(speed, angle, hitPoint);
             return newObject;
         };
         _script.Globals["GenerateEnemy"] = generateEnemy;
@@ -170,7 +165,7 @@ public class ScriptDirector : MonoBehaviour
         Func<PlayerID, float, float, IPlayer> generatePlayer =
         (PlayerID id, float posX, float posY) =>
         {
-            var newObject = _playerGenerator.GenerateObject(id, transformIntoUnityCoordinateFromLua(posX, posY));
+            var newObject = _playerGenerator.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned();
             return newObject;
         };
@@ -178,6 +173,8 @@ public class ScriptDirector : MonoBehaviour
 
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
+
+        //_script.Globals["StartCoroutine"] = (Func<DynValue, UnityEngine.Coroutine>)((DynValue func) => StartCoroutine(runLuaCoroutine(_script.CreateCoroutine(func))));
     }
 
     private IEnumerator runLuaCoroutine(DynValue func)
@@ -192,6 +189,7 @@ public class ScriptDirector : MonoBehaviour
         }
     }
 
+    // Luaを使わない方法。
     private IEnumerator wait(uint numFrames)
     {
         for (var i = 1; i <= numFrames; i++)

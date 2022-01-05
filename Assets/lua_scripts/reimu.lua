@@ -11,10 +11,10 @@ local parameters = {
 	ShotDelayFrames = 6,
 	BulletSpeed = 30.0,
 	OptionAlignment = {
-		{ PlayerWidth, PlayerHeight / 8 },
-		{ PlayerWidth / 2, PlayerHeight * 5 / 8 },
-		{ -PlayerWidth / 2, PlayerHeight * 5 / 8 },
-		{ -PlayerWidth, PlayerHeight / 8 }
+		{ PlayerSize.x, PlayerSize.y / 8 },
+		{ PlayerSize.x / 2, PlayerSize.y * 5 / 8 },
+		{ -PlayerSize.x / 2, PlayerSize.y * 5 / 8 },
+		{ -PlayerSize.x, PlayerSize.y / 8 }
 	}
 }
 
@@ -23,7 +23,7 @@ local options = {}
 
 -- 初期化。
 local function Initialize()
-	player = GeneratePlayer(parameters.ID, ScreenWidth * 0.5, ScreenHeight + PlayerHeight - parameters.InputDelayFrames)
+	player = GeneratePlayer(parameters.ID, ScreenCenter.x, ScreenBottom.y - PlayerSize.y + parameters.InputDelayFrames)
 	for i = 1, 4 do
 		--options[i] = GeneratePlayer(parameters.Option, player.PosX + parameters.OptionAlignment[i][1], player.PosY + parameters.OptionAlignment[i][2])
 	end
@@ -34,14 +34,14 @@ end
 -- 自機の復帰処理。
 local function Rebirth()
 	if (not player:IsEnabled()) and (player.HitPoint > 0) then
-		player.PosX = ScreenWidth * 0.5
-		player.PosY = ScreenHeight + PlayerHeight
+		player.PosX = ScreenCenter.x
+		player.PosY = ScreenBottom.y - PlayerSize.y
 		player:Spawned()
 		player:TurnInvincible(parameters.InvincibleFrames);
 		coroutine.yield()
 		for i = 1, parameters.InputDelayFrames do
 			-- ここでSetVelocityを使うと、移動制限処理のところで不具合が生じる。
-			player.PosY = player.PosY - 1.0
+			player.PosY = player.PosY + ScreenTop.normalized
 			coroutine.yield()
 		end
 	end
@@ -52,16 +52,16 @@ local function Move()
 	while true do
 		local dirX, dirY = 0.0, 0.0
 		if GetKey(CommandID.Leftward) then
-			dirX = -1
+			dirX = ScreenLeft.x
 		end
 		if GetKey(CommandID.Rightward) then
-			dirX = 1
+			dirX = ScreenRight.x
 		end
 		if GetKey(CommandID.Forward) then
-			dirY = -1
+			dirY = ScreenTop.y
 		end
 		if GetKey(CommandID.Backward) then
-			dirY = 1
+			dirY = ScreenBottom.y
 		end
 		player.SlowMode = GetKey(CommandID.Slow)
 		player:SetVelocity(dirX, dirY)
@@ -77,8 +77,8 @@ end
 local function Shoot()
 	while true do
 		if GetKey(CommandID.Shot) then
-			GeneratePlayerBullet(parameters.NormalShot, player.PosX - 12, player.PosY, parameters.BulletSpeed, -math.pi / 2)
-			GeneratePlayerBullet(parameters.NormalShot, player.PosX + 12, player.PosY, parameters.BulletSpeed, -math.pi / 2)
+			GeneratePlayerBullet(parameters.NormalShot, player.PosX - 12, player.PosY, parameters.BulletSpeed, math.pi / 2)
+			GeneratePlayerBullet(parameters.NormalShot, player.PosX + 12, player.PosY, parameters.BulletSpeed, math.pi / 2)
 			--GenerateEffect(EffectID.PlayerShotSound)
 			stg:Wait(parameters.ShotDelayFrames)
 		end
