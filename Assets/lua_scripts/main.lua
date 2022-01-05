@@ -40,10 +40,10 @@ function TestBenchmark()
 	stg:Wait(300)
 end
 
---function Main()
+function Main()
 	math.randomseed(os.time())
-	return 1
-	--local playerScript = require('reimu')
+	local playerScript = require('reimu')
+	playerScript:Run()
 	--StartCoroutine(routine)
 	--TestBenchmark()
 	--[[local stage1 = require('scripts.stage1')
@@ -60,4 +60,4 @@ end
 		coroutine.yield()  -- 1フレーム毎に呼び出し元に返す。
 	until coroutine.status(co) == 'dead'
 	collectgarbage()]]
---end
+end

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MoonSharp.Interpreter;
 
 public interface IPlayer : IMover
 {
@@ -10,6 +11,7 @@ public interface IPlayer : IMover
     void Spawned();
 }
 
+[MoonSharpUserData]
 public abstract class PlayerController : MoverController<Player>, IPlayer
 {
     public bool SlowMode { get => _mover.SlowMode; set => _mover.SlowMode = value; }
@@ -18,6 +20,12 @@ public abstract class PlayerController : MoverController<Player>, IPlayer
     public virtual void Spawned()
     {
         _mover.Spawned();
+    }
+
+    // Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
+    public void SetVelocity(float velX, float velY)
+    {
+        this.Velocity = new Vector2(velX, velY);
     }
 }
 

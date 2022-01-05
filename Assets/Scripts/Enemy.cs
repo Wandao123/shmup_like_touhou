@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MoonSharp.Interpreter;
 
 public interface IEnemy: IMover
 {
     void Spawned(float speed, float angle, int hitPoint);
 }
 
+[MoonSharpUserData]
 public abstract class EnemyController : MoverController<Enemy>, IEnemy
 {
     public virtual void Spawned(float speed, float angle, int hitPoint)

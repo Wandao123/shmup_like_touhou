@@ -7,7 +7,7 @@ local parameters = {
 	InputDelayFrames = 90,
 	ID = PlayerID.Reimu,
 	Option = PlayerID.ReimuOption,
-	NormalShot = BulletID.ReimuNormal,
+	NormalShot = BulletID.ReimuNormalBullet,
 	ShotDelayFrames = 6,
 	BulletSpeed = 30.0,
 	OptionAlignment = {
@@ -79,7 +79,7 @@ local function Shoot()
 		if GetKey(CommandID.Shot) then
 			GeneratePlayerBullet(parameters.NormalShot, player.PosX - 12, player.PosY, parameters.BulletSpeed, -math.pi / 2)
 			GeneratePlayerBullet(parameters.NormalShot, player.PosX + 12, player.PosY, parameters.BulletSpeed, -math.pi / 2)
-			GenerateEffect(EffectID.PlayerShotSound)
+			--GenerateEffect(EffectID.PlayerShotSound)
 			stg:Wait(parameters.ShotDelayFrames)
 		end
 		coroutine.yield()
@@ -92,7 +92,7 @@ local function Down()
 	-- TODO: 被弾するとオプションが暫く残るので、即座に消す方法？
 	return function()
 		if player.HitPoint < life then
-			GenerateEffect(EffectID.DefetedPlayer, player.PosX, player.PosY)
+			--GenerateEffect(EffectID.DefetedPlayer, player.PosX, player.PosY)
 			life = player.HitPoint
 		end
 	end
@@ -102,7 +102,7 @@ function script:Run()
 	Initialize()
 	local co = { coroutine.create(Shoot), coroutine.create(Move) }
 	local detectDown = Down()
-	--[[repeat
+	repeat
 		local status, values = pcall(Rebirth)
 		if not status then
 			io.stderr:write('Error: ' + values + '\n')
@@ -118,7 +118,7 @@ function script:Run()
 		if not status then
 			io.stderr:write('Error: ' + values + '\n')
 		end
-	until false]]
+	until false
 end
 
 function script:GetPlayer()

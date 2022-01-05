@@ -33,6 +33,26 @@ public abstract class MoverController<ForwardedMover> : MonoBehaviour, IMover
     public int Damage { get => _mover.Damage; }
     public int HitPoint { get => _mover.HitPoint; }
 
+    // Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
+    public float PosX
+    {
+        get { return _mover.Position.x; }
+        set {
+            var position = _mover.Position;
+            position.x = value;
+            _mover.Position = position;
+        }
+    }
+    public float PosY
+    {
+        get { return _mover.Position.y; }
+        set {
+            var position = _mover.Position;
+            position.y = value;
+            _mover.Position = position;
+        }
+    }
+
     public virtual void Erase()
     {
         _mover.Erase();

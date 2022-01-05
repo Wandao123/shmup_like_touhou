@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MoonSharp.Interpreter;
 
 public interface IBullet: IMover
 {
     void Shot(float speed, float angle);
 }
 
+[MoonSharpUserData]
 public abstract class BulletController : MoverController<Bullet>, IBullet
 {
     public virtual void Shot(float speed, float angle)
