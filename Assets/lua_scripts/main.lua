@@ -2,7 +2,7 @@
 
 --[[local function foo(initPosX, speed)
 	for i = 1, 5 do
-		local enemy = GenerateEnemy(EnemyID.SmallBlue, initPosX, 0, speed, math.pi / 2, 8)
+		local enemy = GenerateEnemy(EnemyID.SmallBlueFairy, initPosX, ScreenTop.y, speed, -math.pi / 2, 8)
 		for i = 1, 15 do
 			coroutine.yield()
 		end
@@ -17,10 +17,8 @@ local playerScript = require('reimu')
 
 local function TestBenchmark()
 	stg:Wait(70)
-	--local redEnemy = stg:CreateEnemy(EnemyID.SmallRedFairy, (ScreenLeft.x - ScreenRight.x) * 1.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
-	--local blueEnemy = stg:CreateEnemy(EnemyID.SmallBlueFairy, (ScreenLeft.x - ScreenRight.x) * 2.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
-	local redEnemy = GenerateEnemy(EnemyID.SmallRedFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 1.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
-	local blueEnemy = GenerateEnemy(EnemyID.SmallBlueFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 2.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
+	local redEnemy = stg:CreateEnemy(EnemyID.SmallRedFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 1.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
+	local blueEnemy = stg:CreateEnemy(EnemyID.SmallBlueFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 2.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
 	stg:Wait(90)
 	redEnemy.Speed = 0
 	blueEnemy.Speed = 0
@@ -32,12 +30,8 @@ local function TestBenchmark()
 		local playerDirFromRed = math.atan2(playerScript:GetPlayer().PosY - redEnemy.PosY, playerScript:GetPlayer().PosX - redEnemy.PosX)
 		local playerDirFromBlue = math.atan2(playerScript:GetPlayer().PosY - blueEnemy.PosY, playerScript:GetPlayer().PosX - blueEnemy.PosX)
 		for j = -(ways - 1) / 2, (ways - 1) / 2 do
-			if redEnemy:IsEnabled() then
-				GenerateBullet(BulletID.SmallRedBullet, redEnemy.PosX, redEnemy.PosY, 2, playerDirFromRed + j * diffAngle)
-			end
-			if blueEnemy:IsEnabled() then
-				GenerateBullet(BulletID.SmallBlueBullet, blueEnemy.PosX, blueEnemy.PosY, 2, playerDirFromBlue + j * diffAngle)
-			end
+			stg:CreateBullet(BulletID.SmallRedBullet, redEnemy, 2, playerDirFromRed + j * diffAngle)
+			stg:CreateBullet(BulletID.SmallBlueBullet, blueEnemy, 2, playerDirFromBlue + j * diffAngle)
 		end
 		if redEnemy:IsEnabled() or blueEnemy:IsEnabled() then
 			--GenerateEffect(EffectID.EnemyShotSound)
@@ -49,17 +43,8 @@ end
 
 function Main()
 	math.randomseed(os.time())
-	--StartCoroutine(playerScript.Run)
-	local co = { coroutine.create(function() playerScript:Run() end), coroutine.create(TestBenchmark) }
-	repeat
-		for i = 1, #co do
-			if coroutine.status(co[i]) != 'dead' then  -- テーブルから削除する方法？
-				coroutine.resume(co[i])
-			end
-		end
-		coroutine.yield()
-	until false
-	--TestBenchmark()
+	StartCoroutine(playerScript.Run)
+	TestBenchmark()
 	--[[local stage1 = require('scripts.stage1')
 	stage1:Start()
 	ChangeScene(SceneID.StageClear)

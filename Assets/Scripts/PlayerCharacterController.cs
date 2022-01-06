@@ -101,13 +101,19 @@ class PlayerCharacter : Player
     {
         base.FixedUpdate();
 
-        // 速度の更新と移動制限。速度の更新はMoverでも行われるが、どうしても三角関数の計算でずれるので、自機クラスではここで再設定する。移動制限は速度を変化させた場合のみで、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
+        // 移動制限。画面外に出ないように、Moverで代入した速度を上書きする（三角関数の計算でずれるという理由もある）。この制限は速度を変化させた場合のみに適用され、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
+        if (this.Velocity == Vector2.zero)
+            return;
         var nextPosition = this.Position + this.Velocity;
         var velocity = this.Velocity;
-        if (nextPosition.x < ScreenMinimum.x || nextPosition.x > ScreenMaximum.x)
-            velocity.x = 0.0f;
-        if (nextPosition.y < ScreenMinimum.y || nextPosition.y > ScreenMaximum.y)
-            velocity.y = 0.0f;
+        if (nextPosition.x < ScreenMinimum.x)
+            velocity.x = ScreenMinimum.x - this.Position.x;
+        else if (nextPosition.x > ScreenMaximum.x)
+            velocity.x = ScreenMaximum.x - this.Position.x;
+        if (nextPosition.y < ScreenMinimum.y)
+            velocity.y = ScreenMinimum.y - this.Position.y;
+        else if (nextPosition.y > ScreenMaximum.y)
+            velocity.y = ScreenMaximum.y - this.Position.y;
         _rigid2D.velocity = velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 

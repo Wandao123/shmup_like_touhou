@@ -29,4 +29,14 @@ function stg:CreateEnemy(id, initPosX, initPosY, speed, angle, hp)  -- 元々の
 	return enemy
 end
 
+-- 実行中の敵から弾を生成する。
+-- id: 弾のID; enemy: 敵オブジェクト; speed: 初速度の大きさ; angle: 初速度の角度.
+function stg:CreateBullet(id, enemy, speed, angle)
+	local bullet = nil
+	if enemy:IsEnabled() then
+		bullet = GenerateBullet(id, enemy.PosX, enemy.PosY, speed, angle)
+	end
+	return bullet
+end
+
 return stg

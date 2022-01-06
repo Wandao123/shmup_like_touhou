@@ -47,6 +47,9 @@ public class ScriptDirector : MonoBehaviour
     private Script _script;
     private PlayerController _player = null;
 
+    // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
+    public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
+
     void Awake()
     {
         _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
@@ -83,8 +86,7 @@ public class ScriptDirector : MonoBehaviour
 
         registerConstants();
         _script.DoFile("Assets/lua_scripts/main.lua");
-        var co = _script.CreateCoroutine(_script.Globals.Get("Main"));
-        StartCoroutine(runLuaCoroutine(co));
+        StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 
     void Update()
@@ -101,6 +103,7 @@ public class ScriptDirector : MonoBehaviour
     {
         UserData.RegisterType<Vector2>();
         UserData.RegisterType<Vector2Int>();
+        UserData.RegisterType<UnityEngine.Coroutine>();
         UserData.RegisterType<BulletID>();
         UserData.RegisterType<CommandID>();
         UserData.RegisterType<EnemyID>();
@@ -167,18 +170,23 @@ public class ScriptDirector : MonoBehaviour
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 
-        //_script.Globals["StartCoroutine"] = (Func<DynValue, UnityEngine.Coroutine>)((DynValue func) => StartCoroutine(runLuaCoroutine(_script.CreateCoroutine(func))));
+        AppliedFunc<DynValue, DynValue, UnityEngine.Coroutine> luaStartCoroutineWithArgs =
+        (func, args) => StartCoroutine(runLuaCoroutine(func, args));
+        _script.Globals["StartCoroutineWithArgs"] = luaStartCoroutineWithArgs;
+        _script.DoString(@"
+            function StartCoroutine(func, ...)
+                StartCoroutineWithArgs(func, {...})
+            end
+        ");
     }
 
-    private IEnumerator runLuaCoroutine(DynValue func)
+    private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)
     {
-        var co = func.Coroutine;
-        while (true)
+        var co = _script.CreateCoroutine(func).Coroutine;
+        while (co.State != CoroutineState.Dead)
         {
-            if (co.State == CoroutineState.Dead)
-                break;
-            else
-                yield return co.Resume();
+            co.Resume(args);
+            yield return null;
         }
     }
 
