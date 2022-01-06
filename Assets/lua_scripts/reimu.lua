@@ -41,7 +41,7 @@ local function Rebirth()
 		coroutine.yield()
 		for i = 1, parameters.InputDelayFrames do
 			-- ここでSetVelocityを使うと、移動制限処理のところで不具合が生じる。
-			player.PosY = player.PosY + ScreenTop.normalized
+			player:MovePosition(player.Position + ScreenTop.normalized)
 			coroutine.yield()
 		end
 	end

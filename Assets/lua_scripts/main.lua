@@ -25,7 +25,7 @@ local function TestBenchmark()
 	redEnemy.Speed = 0
 	blueEnemy.Speed = 0
 	stg:Wait(5)
-	local ways = 51
+	local ways = 27
 	local maxIteration = 60
 	local diffAngle = 2 * math.pi / ways
 	for i = 1, maxIteration do

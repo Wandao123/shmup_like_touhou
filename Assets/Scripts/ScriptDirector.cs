@@ -32,7 +32,7 @@ public enum CommandID : int {
 //       https://eims.hatenablog.com/entry/2018/09/25/021420
 public class ScriptDirector : MonoBehaviour
 {
-    private Vector2Int _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
+    private Vector2 _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
     private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     private Dictionary<CommandID, Func<bool>> _mapping;
@@ -47,17 +47,10 @@ public class ScriptDirector : MonoBehaviour
     private Script _script;
     private PlayerController _player = null;
 
-    public Vector2Int ScreenBottomLeft { get => _screenBottomLeft; }
-    public Vector2Int ScreenTopRight { get => _screenTopRight; }
-
     void Awake()
     {
-        Vector2 bottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
-        _screenBottomLeft = Vector2Int.RoundToInt(bottomLeft);
-        Vector2 topRight = Camera.main.ViewportToWorldPoint(Vector2.one);
-        _screenTopRight = Vector2Int.RoundToInt(topRight);
-        if (bottomLeft - _screenBottomLeft != Vector2.zero || topRight - _screenTopRight != Vector2.zero)
-            Debug.LogWarning("The width or the height of the screen are not integer numbers: " + bottomLeft.ToString() + ", " + topRight.ToString());
+        _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
+        _screenTopRight = Camera.main.ViewportToWorldPoint(Vector2.one);
             
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
@@ -78,7 +71,6 @@ public class ScriptDirector : MonoBehaviour
         ((ScriptLoaderBase)_script.Options.ScriptLoader).ModulePaths = ScriptLoaderBase.UnpackStringPaths("Assets/lua_scripts/?;Assets/lua_scripts/?.lua");
         _script.Options.DebugPrint = s => Debug.Log(s);
         registerClasses();
-        registerConstants();
         registerGlueFunctions();
         UserData.RegisterAssembly();
     }
@@ -89,8 +81,9 @@ public class ScriptDirector : MonoBehaviour
         //StartCoroutine(playerScript());
         //StartCoroutine(stageScript());
 
+        registerConstants();
         _script.DoFile("Assets/lua_scripts/main.lua");
-        var co = _script.CreateCoroutine(_script.Globals["Main"]);
+        var co = _script.CreateCoroutine(_script.Globals.Get("Main"));
         StartCoroutine(runLuaCoroutine(co));
     }
 
@@ -118,13 +111,13 @@ public class ScriptDirector : MonoBehaviour
     {
         _script.Globals["ScreenTopRight"] = _screenTopRight;
         _script.Globals["ScreenBottomLeft"] = _screenBottomLeft;
-        _script.Globals["ScreenTopLeft"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0, 1)));
-        _script.Globals["ScreenBottomRight"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(1, 0)));
-        _script.Globals["ScreenCenter"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.5f)));
-        _script.Globals["ScreenTop"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 1.0f)));
-        _script.Globals["ScreenBottom"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.0f)));
-        _script.Globals["ScreenLeft"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(0.0f, 0.5f)));
-        _script.Globals["ScreenRight"] = Vector2Int.RoundToInt(Camera.main.ViewportToWorldPoint(new Vector2(1.0f, 0.5f)));
+        _script.Globals["ScreenTopLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0, 1));
+        _script.Globals["ScreenBottomRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1, 0));
+        _script.Globals["ScreenCenter"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.5f));
+        _script.Globals["ScreenTop"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 1.0f));
+        _script.Globals["ScreenBottom"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.0f));
+        _script.Globals["ScreenLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.0f, 0.5f));
+        _script.Globals["ScreenRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1.0f, 0.5f));
         _script.Globals["PlayerSize"] = _playerSize;
         _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
         _script.Globals["CommandID"] = UserData.CreateStatic<CommandID>();
@@ -285,17 +278,27 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        var smallFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
-        smallFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
+        var smallRedFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
+        var smallBlueFairy = _enemyGenerator.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
+        smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
         {
-            if (i % 30 == 0 && smallFairy.IsEnabled())
-                _enemyBulletGenerator.GenerateObject(BulletID.SmallRedBullet, smallFairy.Position)
-                .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallFairy.Position.y, _player.Position.x - smallFairy.Position.x));
-            smallFairy.Angle += Mathf.PI / 180;
+            if (i % 6 == 0)
+            {
+                if (smallRedFairy.IsEnabled())
+                    _enemyBulletGenerator.GenerateObject(BulletID.SmallRedBullet, smallRedFairy.Position)
+                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x));
+                if (smallBlueFairy.IsEnabled())
+                    _enemyBulletGenerator.GenerateObject(BulletID.SmallBlueBullet, smallBlueFairy.Position)
+                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x));
+            }
+            smallRedFairy.Angle += Mathf.Deg2Rad;
+            smallBlueFairy.Angle -= Mathf.Deg2Rad;
             yield return null;
         }
-        smallFairy.Speed = 0.0f;
+        smallRedFairy.Speed = 0.0f;
+        smallBlueFairy.Speed = 0.0f;
     }
 }

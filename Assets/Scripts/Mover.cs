@@ -178,6 +178,8 @@ public abstract class Mover : IMover
         disableIfOutside();
     }
 
+    // 参考：https://nknkybigames.hatenablog.com/entry/2018/03/08/185122
+    //       https://gomafrontier.com/unity/1189
     /// <summary>MonoBehaviorのOnCollisionEnter2Dから呼ばれる処理。</summary>
     public abstract void OnCollisionEnter2D(in IMover mover);
 
@@ -195,7 +197,7 @@ public abstract class Mover : IMover
 
     public bool IsInvincible()
     {
-        return (_invincibleCounter > 0) ? true : false;
+        return _invincibleCounter > 0;
     }
 
     // MovePositionメソッドはごく短い時間での移動にしか適さない（Rigidbody2Dのマニュアルを参照）ので、

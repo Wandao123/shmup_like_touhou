@@ -72,7 +72,7 @@ public abstract class Player : Mover, IPlayer
 
     public override void OnCollisionEnter2D(in IMover mover)
     {
-        if (_invincibleCounter > 0)
+        if (!IsEnabled() || IsInvincible())
             return;
         Erase();
         --_hitPoint;
