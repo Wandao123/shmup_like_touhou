@@ -108,6 +108,9 @@ public class ScriptDirector : MonoBehaviour
         UserData.RegisterType<CommandID>();
         UserData.RegisterType<EnemyID>();
         UserData.RegisterType<PlayerID>();
+        UserData.RegisterType<BulletController>();
+        UserData.RegisterType<EnemyController>();
+        UserData.RegisterType<PlayerController>();
     }
 
     private void registerConstants()

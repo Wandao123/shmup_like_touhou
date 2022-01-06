@@ -17,13 +17,13 @@ local playerScript = require('reimu')
 
 local function TestBenchmark()
 	stg:Wait(70)
-	local redEnemy = stg:CreateEnemy(EnemyID.SmallRedFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 1.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
-	local blueEnemy = stg:CreateEnemy(EnemyID.SmallBlueFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 2.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 80)
+	local redEnemy = stg:CreateEnemy(EnemyID.SmallRedFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 1.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 40)
+	local blueEnemy = stg:CreateEnemy(EnemyID.SmallBlueFairy, ScreenLeft.x + (ScreenRight.x - ScreenLeft.x) * 2.0 / 3, ScreenTop.y, 1.5, -math.pi / 2, 40)
 	stg:Wait(90)
 	redEnemy.Speed = 0
 	blueEnemy.Speed = 0
 	stg:Wait(5)
-	local ways = 27
+	local ways = 21
 	local maxIteration = 60
 	local diffAngle = 2 * math.pi / ways
 	for i = 1, maxIteration do

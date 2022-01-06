@@ -68,6 +68,8 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Additional settings
+/build
+/build-IL2CPP
 /[Aa]ssets/Plugins/GitHub*
 /[Aa]ssets/Plugins/MoonSharp/*
 /[Aa]ssets/Plugins/WSA/*
