@@ -24,8 +24,12 @@ public class PlayerCharacterController : PlayerController
     //       https://light11.hatenadiary.com/entry/2021/04/13/194929
     void Awake()
     {
-        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();
-        spritesList = spritesList.OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", ""))).ToList<Sprite>();  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
+        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();  // 不要なものも含めて、画像のスプライトを全て取得。
+        spritesList = spritesList
+            // HACK: 必要なスクリプトを抽出するもっと良い方法？
+            .Where(sprite => sprite.name.Contains(this.name.Replace("(Clone)", "_")))  // 必要なものだけ抽出。ここの処理のために、アタッチされるオブジェクト名を必要なスプライトのオブジェクト名に含める必要がある。
+            .OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", "")))  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
+            .ToList<Sprite>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();

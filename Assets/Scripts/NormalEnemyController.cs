@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-//using UnityEditor;
 
 public class NormalEnemyController : EnemyController
 {
@@ -16,10 +15,12 @@ public class NormalEnemyController : EnemyController
 
     void Awake()
     {
-        var temp = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();  // 不要なものも含めて、画像のスプライトを全て取得。
-        //var original = PrefabUtility.GetCorrespondingObjectFromSource(gameObject);  // インスタンスからプレハブを取得する方法だが、プレイ中は必ずNullが帰ってきてしまう。
-        var spritesList = temp.Where(sprite => sprite.name.Contains(this.name.Replace("(Clone)", ""))).ToList<Sprite>();  // 必要なものだけ抽出。ここの処理のために、アタッチされるオブジェクト名を必要なスプライトのオブジェクト名に含める必要がある。
-        spritesList = spritesList.OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", ""))).ToList<Sprite>();  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
+        var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();  // 不要なものも含めて、画像のスプライトを全て取得。
+        spritesList = spritesList
+            // HACK: 必要なスクリプトを抽出するもっと良い方法？
+            .Where(sprite => sprite.name.Contains(this.name.Replace("(Clone)", "_")))  // 必要なものだけ抽出。ここの処理のために、アタッチされるオブジェクト名を必要なスプライトのオブジェクト名に含める必要がある。
+            .OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", "")))  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
+            .ToList<Sprite>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();
