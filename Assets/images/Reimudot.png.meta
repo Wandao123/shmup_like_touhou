@@ -4,52 +4,52 @@ TextureImporter:
   internalIDToNameTable:
   - first:
       213: 1554008646097967430
-    second: Reimudot_0
+    second: Reimu_0
   - first:
       213: -5822009645260400225
-    second: Reimudot_1
+    second: Reimu_1
   - first:
       213: 1220493117204008783
-    second: Reimudot_2
+    second: Reimu_2
   - first:
       213: 6786616503632554016
-    second: Reimudot_3
+    second: Reimu_3
   - first:
       213: -899330475438574819
-    second: Reimudot_4
+    second: Reimu_4
   - first:
       213: -4615155005108780553
-    second: Reimudot_5
+    second: Reimu_5
   - first:
       213: -5748301614216909454
-    second: Reimudot_6
+    second: Reimu_6
   - first:
       213: -6715164158279759248
-    second: Reimudot_7
+    second: Reimu_7
   - first:
       213: 5179427556406453123
-    second: Reimudot_8
+    second: Reimu_8
   - first:
       213: 3384352048032822265
-    second: Reimudot_9
+    second: Reimu_9
   - first:
       213: 4568090176578352390
-    second: Reimudot_10
+    second: Reimu_10
   - first:
       213: 4791835832055519487
-    second: Reimudot_11
+    second: Reimu_11
   - first:
       213: 5456386412033555531
-    second: Reimudot_12
+    second: Reimu_12
   - first:
       213: 2027175804814734559
-    second: Reimudot_13
+    second: Reimu_13
   - first:
       213: -841325421898697625
-    second: Reimudot_14
+    second: Reimu_14
   - first:
       213: -5702080056835511011
-    second: Reimudot_15
+    second: ReimuOption
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -139,7 +139,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Reimudot_0
+      name: Reimu_0
       rect:
         serializedVersion: 2
         x: 0
@@ -147,7 +147,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -160,7 +160,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_1
+      name: Reimu_1
       rect:
         serializedVersion: 2
         x: 32
@@ -168,7 +168,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -181,7 +181,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_2
+      name: Reimu_2
       rect:
         serializedVersion: 2
         x: 64
@@ -189,7 +189,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -202,7 +202,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_3
+      name: Reimu_3
       rect:
         serializedVersion: 2
         x: 96
@@ -210,7 +210,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -223,7 +223,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_4
+      name: Reimu_4
       rect:
         serializedVersion: 2
         x: 128
@@ -231,7 +231,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -244,7 +244,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_5
+      name: Reimu_5
       rect:
         serializedVersion: 2
         x: 0
@@ -252,7 +252,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -265,7 +265,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_6
+      name: Reimu_6
       rect:
         serializedVersion: 2
         x: 32
@@ -273,7 +273,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -286,7 +286,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_7
+      name: Reimu_7
       rect:
         serializedVersion: 2
         x: 64
@@ -294,7 +294,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -307,7 +307,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_8
+      name: Reimu_8
       rect:
         serializedVersion: 2
         x: 96
@@ -315,7 +315,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -328,7 +328,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_9
+      name: Reimu_9
       rect:
         serializedVersion: 2
         x: 128
@@ -336,7 +336,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -349,7 +349,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_10
+      name: Reimu_10
       rect:
         serializedVersion: 2
         x: 0
@@ -357,7 +357,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -370,7 +370,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_11
+      name: Reimu_11
       rect:
         serializedVersion: 2
         x: 32
@@ -378,7 +378,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -391,7 +391,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_12
+      name: Reimu_12
       rect:
         serializedVersion: 2
         x: 64
@@ -399,7 +399,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -412,7 +412,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_13
+      name: Reimu_13
       rect:
         serializedVersion: 2
         x: 96
@@ -420,7 +420,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -433,7 +433,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_14
+      name: Reimu_14
       rect:
         serializedVersion: 2
         x: 128
@@ -441,7 +441,7 @@ TextureImporter:
         width: 32
         height: 48
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -454,7 +454,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Reimudot_15
+      name: ReimuOption
       rect:
         serializedVersion: 2
         x: 0
@@ -462,7 +462,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

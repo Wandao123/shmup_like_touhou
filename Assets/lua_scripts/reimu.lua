@@ -74,7 +74,7 @@ local function Move()
 end
 
 -- 自機のショット。
-local function Shoot()
+local function Shoot()  -- 霊夢だと、当たり判定を中心から移動させているため、敵に近づきすぎると当たらなくなるバグあり。
 	while true do
 		if GetKey(CommandID.Shot) then
 			GeneratePlayerBullet(parameters.NormalShot, player.PosX - 12, player.PosY, parameters.BulletSpeed, math.pi / 2)

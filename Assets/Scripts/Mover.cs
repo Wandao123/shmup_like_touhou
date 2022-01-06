@@ -288,10 +288,12 @@ public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
                 child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
                 return mover;
             }
-        var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
-        var newObject = Instantiate(prefab, position, Quaternion.identity) as GameObject;
-        newObject.name = prefab.name;
-        newObject.transform.parent = this.transform;
+        //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
+        //var newObject = Instantiate(prefab, position, Quaternion.identity) as GameObject;
+        //newObject.name = prefab.name;
+        //newObject.transform.parent = this.transform;
+        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, this.transform).WaitForCompletion();
+        newObject.name = id.ToString();
         return newObject.GetComponent<TMoverController>();
     }
 }

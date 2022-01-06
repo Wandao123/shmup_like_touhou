@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -23,6 +25,7 @@ public class PlayerCharacterController : PlayerController
     void Awake()
     {
         var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();
+        spritesList = spritesList.OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", ""))).ToList<Sprite>();  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();
