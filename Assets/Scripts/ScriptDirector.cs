@@ -115,6 +115,7 @@ public class ScriptDirector : MonoBehaviour
 
     private void registerConstants()
     {
+        _script.Globals["Vector2"] = typeof(Vector2);
         _script.Globals["ScreenTopRight"] = _screenTopRight;
         _script.Globals["ScreenBottomLeft"] = _screenBottomLeft;
         _script.Globals["ScreenTopLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0, 1));
@@ -129,7 +130,6 @@ public class ScriptDirector : MonoBehaviour
         _script.Globals["CommandID"] = UserData.CreateStatic<CommandID>();
         _script.Globals["EnemyID"] = UserData.CreateStatic<EnemyID>();
         _script.Globals["PlayerID"] = UserData.CreateStatic<PlayerID>();
-        _script.Globals["Vector2"] = typeof(Vector2);
     }
 
     private void registerGlueFunctions()

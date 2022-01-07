@@ -96,6 +96,7 @@ public abstract class Mover : IMover
     protected uint _invincibleCounter = 0;  // 無敵状態になっている残りのフレーム数。
     private uint _existingCounter = 0;  // enabledがtrueになってからのフレーム数。
     private readonly Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ拡げた座標。
+    //private readonly int DefaultLayer;
 
     /// <summary>画面外にあるために無効にするか否かを判定。</summary>
     private Action disableIfOutside;
@@ -122,6 +123,7 @@ public abstract class Mover : IMover
         float height = spriteRenderer.bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) - (new Vector3(width, height, 0) * 0.5f);
         ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) + (new Vector3(width, height, 0) * 0.5f);
+        //DefaultLayer = transform.gameObject.layer;
 
         if (autoDisabling)
             disableIfOutside = () =>
@@ -185,6 +187,7 @@ public abstract class Mover : IMover
 
     public void Erase()
     {
+        //_transform.gameObject.layer = LayerMask.NameToLayer("Invincible");
         _spriteRenderer.enabled = false;
         _rigid2D.simulated = false;
         _enabled = false;
@@ -209,11 +212,13 @@ public abstract class Mover : IMover
 
     public void TurnInvincible(uint frames)
     {
+        //_transform.gameObject.layer = LayerMask.NameToLayer("Invincible");
         _invincibleCounter = frames;
     }
 
     protected virtual void spawned()
     {
+        //_transform.gameObject.layer = DefaultLayer;
         _spriteRenderer.enabled = true;
         _rigid2D.simulated = true;
         _enabled = true;
@@ -283,6 +288,7 @@ public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
     public TMoverController GenerateObject(ID id, Vector2 position)
     {
         foreach (Transform child in transform)
+            // 変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
             if (child.name == id.ToString() && child.GetComponent<TMoverController>() is var mover && !mover.IsEnabled())
             {
                 child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。

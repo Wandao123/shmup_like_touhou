@@ -12,6 +12,7 @@ public class EnemyBulletController : BulletController
     private string _reference;
     private SpriteRenderer _spriteRenderer;
     private Rigidbody2D _rigid2D;
+    //private Collider2D _collider2D;
 
     void Awake()
     {
@@ -19,12 +20,14 @@ public class EnemyBulletController : BulletController
         _spriteRenderer.enabled = false;  // インスペクタで設定すると、プレハブ自体に表示されなくなるので、ここで設定する。
         _rigid2D = GetComponent<Rigidbody2D>();
         _rigid2D.simulated = false;
+        //_collider2D = GetComponent<Collider2D>();
+        //_collider2D.enabled = false;  // Physics2D.IgnoreCollisionを使う方法は相手のCollider2Dを取得する必要があるため煩雑。
         _mover = new EnemyBullet(transform, _spriteRenderer, _rigid2D);
     }
 
     void Start()
     {
-
+        
     }
 
     void Update()
@@ -41,7 +44,14 @@ public class EnemyBulletController : BulletController
     private void OnCollisionEnter2D(Collision2D collision)
     {
         _mover.OnCollisionEnter2D(collision.gameObject.GetComponent<IMover>() as IMover);
+        //_collider2D.enabled = false;
     }
+
+    /*public override void Shot(float speed, float angle)
+    {
+        base.Shot(speed, angle);
+        _collider2D.enabled = true;
+    }*/
 }
 
 /// <summary>敵弾クラス。</summary>

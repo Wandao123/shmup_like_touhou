@@ -166,6 +166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29fdd24e5f6a73a2b87bbb38758c5ed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preloadedObjects:
+    list: []
 --- !u!1 &419852158
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,6 +682,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29fdd24e5f6a73a2b87bbb38758c5ed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _preloadedObjects:
+    list:
+    - Key: 4
+      Value: 1000
+    - Key: 5
+      Value: 1000
 --- !u!1 &2125175127
 GameObject:
   m_ObjectHideFlags: 0
