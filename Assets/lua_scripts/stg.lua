@@ -39,4 +39,14 @@ function stg:CreateBullet(id, enemy, speed, angle)
 	return bullet
 end
 
+-- 画面の左上と右上をa:bに内分する点の座標。
+function stg:DivideInternallyScreenTop(a, b)
+	return ScreenTopLeft * b / (a + b) + ScreenTopRight * a / (a + b)
+end
+
+-- 或るオブジェクトから或るオブジェクトへの方向。
+function stg:CalcAngleBetween(obj1, obj2)
+	return math.atan2(obj2.PosY - obj1.PosY, obj2.PosX - obj1.PosX)
+end
+
 return stg

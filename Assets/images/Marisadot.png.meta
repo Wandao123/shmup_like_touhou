@@ -72,6 +72,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -484,6 +485,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Marisa_14: 2732884850990239038
+      Marisa_4: 5250034504149074812
+      Marisa_12: 1130491960863074335
+      Marisa_5: 4106547815344882043
+      MarisaOption: -2480388484222650620
+      Marisa_6: 7486893723393567201
+      Marisa_13: 6358710161488790573
+      Marisa_8: 4424291682759154283
+      Marisa_2: -4755143811339028777
+      Marisa_7: -7457200672236116926
+      Marisa_10: -4834432576594029915
+      Marisa_1: -1993169098988903320
+      Marisa_11: 467427600184665347
+      Marisa_0: 1577257058991467432
+      Marisa_3: -6833137251836331542
+      Marisa_9: -1720922759158758943
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

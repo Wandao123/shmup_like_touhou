@@ -90,6 +90,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -487,7 +488,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: e6ef40ef555736d60800000000000000
-      internalID: 7882272785022910062
+      internalID: 4025585720967319080
       vertices: []
       indices: 
       edges: []
@@ -508,7 +509,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 5773832d3851eeac0800000000000000
-      internalID: -3824095377679173771
+      internalID: -8968784331785554362
       vertices: []
       indices: 
       edges: []
@@ -529,7 +530,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 9ede963171491fdc0800000000000000
-      internalID: -3606938999716188695
+      internalID: 5562514553893231023
       vertices: []
       indices: 
       edges: []
@@ -571,7 +572,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 28f1a699e8fb33490800000000000000
-      internalID: -7767654313103843454
+      internalID: 4004952826208646067
       vertices: []
       indices: 
       edges: []
@@ -592,7 +593,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 88d838d63e9a795e0800000000000000
-      internalID: -1902865523280736888
+      internalID: 7216291564021037674
       vertices: []
       indices: 
       edges: []
@@ -613,7 +614,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 9e6884bfb99b16ec0800000000000000
-      internalID: -3575372549568559383
+      internalID: -1795757371277179605
       vertices: []
       indices: 
       edges: []
@@ -628,6 +629,29 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      SmallBlueFairy_3: 4025585720967319080
+      SmallBlueFairy_4: -8968784331785554362
+      SmallBlueFairy_7: -7911572535675539837
+      SmallRedFairy_3: 4004952826208646067
+      SmallRedFairy_8: -8714037839689498976
+      SmallBlueFairy_0: 8596640243658272642
+      Enemy_12: 7867557418624504665
+      SmallRedFairy_1: 8273598715916126338
+      SmallRedFairy_0: -3763824636803078212
+      SmallRedFairy_6: -7875468939738959075
+      SmallRedFairy_4: 7216291564021037674
+      Enemy_18: -6322652313883057565
+      SmallBlueFairy_8: 5398807837072792716
+      SmallRedFairy_5: -1795757371277179605
+      SmallRedFairy_7: -7734248497391147085
+      Enemy_14: 5540866796086995345
+      Enemy_13: 3296816500878435913
+      SmallBlueFairy_6: -5720429097031363069
+      SmallRedFairy_2: -8966301255875288918
+      SmallBlueFairy_1: -7642239419928554605
+      SmallBlueFairy_5: 5562514553893231023
+      SmallBlueFairy_2: -3876759189950653258
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

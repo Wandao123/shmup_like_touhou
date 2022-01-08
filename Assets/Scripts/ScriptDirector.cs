@@ -170,6 +170,9 @@ public class ScriptDirector : MonoBehaviour
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
+        Func<IPlayer> getPlayer = () => _playerGenerator.GetPlayer();
+        _script.Globals["GetPlayer"] = getPlayer;
+
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 

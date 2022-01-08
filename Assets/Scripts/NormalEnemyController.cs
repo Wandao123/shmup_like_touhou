@@ -76,22 +76,23 @@ class NormalEnemy : Enemy
         if (Speed > 0.0) {  // 30度ずつの領域に分けて、画像を切り換える。
             if (Angle == Mathf.PI / 2.0f)
 			    return _clips[0, (countedFrames / DelayFrames) % NumSlice];  // どう設定するのが適切なのか？
-            else if (Angle > Mathf.PI * 2.0f && Angle < Mathf.PI * 13.0f / 12.0f)
+            else if (Angle > Mathf.PI * 6.0f / 12.0f && Angle < Mathf.PI * 13.0f / 12.0f)
                 return _clips[1, 2];
-            else if (Angle > Mathf.PI * 13.0f / 12.0f && Angle <= Mathf.PI * 5.0f / 4.0f)
+            else if (Angle > Mathf.PI * 13.0f / 12.0f && Angle <= Mathf.PI * 15.0f / 12.0f)
                 return _clips[1, 1];
-            else if (Angle > Mathf.PI * 5.0f / 4.0f && Angle <= Mathf.PI * 17.0f / 12.0f)
+            else if (Angle > Mathf.PI * 15.0f / 12.0f && Angle <= Mathf.PI * 17.0f / 12.0f)
                 return _clips[1, 0];
             else if (Angle >= Mathf.PI * 17.0f / 12.0f && Angle <= Mathf.PI * 19.0f / 12.0f)
                 return _clips[0, (countedFrames / DelayFrames) % NumSlice];
-            else if (Angle >= Mathf.PI * 19.0f / 12.0f && Angle < Mathf.PI * 7.0f / 4.0f)
+            else if (Angle >= Mathf.PI * 19.0f / 12.0f && Angle < Mathf.PI * 21.0f / 12.0f)
                 return _clips[2, 0];
-            else if (Angle >= Mathf.PI * 7.0f / 4.0f && Angle < Mathf.PI * 23.0f / 12.0f)
+            else if (Angle >= Mathf.PI * 21.0f / 12.0f && Angle < Mathf.PI * 23.0f / 12.0f)
                 return _clips[2, 1];
             else
                 return _clips[2, 2];
         }
-        else {
+        else
+        {
             return _clips[0, (countedFrames / DelayFrames) % NumSlice];
         }
     }

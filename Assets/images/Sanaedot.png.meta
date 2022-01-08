@@ -72,6 +72,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -484,6 +485,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      SanaeOption: -8642993994600982981
+      Sanae_2: 4287577301457702571
+      Sanae_14: -3015814299623960405
+      Sanae_13: -5634471087372671866
+      Sanae_4: 1801990436634604705
+      Sanae_7: -8208402684868653574
+      Sanae_10: -1645636924332187344
+      Sanae_8: -8851182228587615046
+      Sanae_5: -5299224959130705202
+      Sanae_9: -1865466816510234175
+      Sanae_0: -3604446627103495491
+      Sanae_12: -4719815702366734593
+      Sanae_11: -1165366777868250135
+      Sanae_1: -4166047219599677597
+      Sanae_3: -2264051617246421766
+      Sanae_6: 3422332453663134067
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

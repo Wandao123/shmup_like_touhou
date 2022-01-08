@@ -31,4 +31,12 @@ public class PlayerGenerator : MoverGenerator<PlayerController, PlayerID>
 
         // 予めオブジェクトを生成しておく場合はここに記述。
     }
+
+    public PlayerCharacterController GetPlayer()
+    {
+        foreach (Transform child in transform)
+            if (child.gameObject.GetComponent<PlayerCharacterController>() is var controller && controller is not null)
+                return controller;
+        return null;
+    }
 }

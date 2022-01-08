@@ -38,7 +38,7 @@ namespace Serialize {
 
 
         public Dictionary<TKey, TValue> GetTable () {
-            if (table == null) {
+            if (table is null) {
                 table = ConvertListToDictionary(list);
             }
             return table;
