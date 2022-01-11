@@ -77,3 +77,4 @@ crashlytics-build.properties
 /[Aa]ssets/Plugins/x86_64/*
 /[Aa]ssets/Plugins/xlua.bundle/*
 /[Aa]ssets/XLua/*
+/UserSettings/Layouts/*
