@@ -103,7 +103,7 @@ Enemy ..|> IEnemyActivity
 Player --|> Mover
 Player ..|> IPlayerActivity
 
-class EnemyBullet
+/'class EnemyBullet
 class PlayerBullet
 
 EnemyBullet --|> Bullet
@@ -113,10 +113,15 @@ class NormalEnemy
 class BossEnemy
 
 NormalEnemy --|> Enemy
-BossEnemy --|> Enemy
+BossEnemy --|> Enemy'/
 
-class PlayerCharacter
-class PlayerOption
+class PlayerCharacter {
+    #FixedUpdate()
+}
+
+class PlayerOption {
+    #FixedUpdate()
+}
 
 PlayerOption --|> Player
 PlayerCharacter --|> Player
@@ -126,47 +131,77 @@ note left of ObjectPool
     From Unity
 end note
 
-enum ObjectID
-
-abstract Manager {
+abstract MoverManager {
     -pool: List<IActivity>
     +GenerateObject(id: ObjectID)
     +Release(object: IActivity)
 }
-note right of Manager
+note left of MoverManager
     Generics
 end note
 
-IActivity "0..*" --o "1" Manager
-Manager ..> ObjectPool
-Manager ..> ObjectID
+MoverManager ..> ObjectPool
 
-interface IAnimation {
-    #clipFromImage(countedFrames: int)
+enum BulletID
+class BulletManager
+
+BulletManager ..> BulletID
+BulletManager --|> MoverManager
+IBulletActivity "0..*" --o "1" BulletManager
+
+enum EnemyID
+class EnemyManager
+
+EnemyManager ..> EnemyID
+EnemyManager --|> MoverManager
+IEnemyActivity "0..*" --o "1" EnemyManager
+
+enum PlayerID
+class PlayerManager
+
+PlayerManager ..> PlayerID
+PlayerManager --|> MoverManager
+IPlayerActivity "0..*" --o "1" PlayerManager
+
+abstract SpriteAnimation {
+    #{abstract} clipFromImage(countedFrames: int)
+    -Update()
 }
 
 class BulletAnimation {
     -clip: Sprite
     -spriteRenderer
-    -Update()
+    #clipFromImage(countedFrames: int)
 }
 
-class EnemyAnimation {
+class NormalEnemyAnimation {
     -clips: Sprite[]
     -spriteRenderer
-    -Update()
+    #clipFromImage(countedFrames: int)
 }
 
-class PlayerAnimation {
+class BossEnemyAnimation {
     -clips: Sprite[]
     -spriteRenderer
-    -Update()
+    #clipFromImage(countedFrames: int)
 }
 
-IAnimation <|.. BulletAnimation
-IAnimation <|.. EnemyAnimation
-IAnimation <|.. PlayerAnimation
-BulletAnimation --|> MonoBehaviour
-EnemyAnimation --|> MonoBehaviour
-PlayerAnimation --|> MonoBehaviour
+class PlayerCharacterAnimation {
+    -clips: Sprite[,]
+    -spriteRenderer
+    #clipFromImage(countedFrames: int)
+}
+
+class PlayerOptionAnimation {
+    -clip: Sprite
+    -spriteRenderer
+    #clipFromImage(countedFrames: int)
+}
+
+BulletAnimation --|> SpriteAnimation
+NormalEnemyAnimation --|> SpriteAnimation
+BossEnemyAnimation --|> SpriteAnimation
+PlayerCharacterAnimation --|> SpriteAnimation
+PlayerOptionAnimation --|> SpriteAnimation
+SpriteAnimation --|> MonoBehaviour
 @enduml
