@@ -1,0 +1,172 @@
+@startuml classes
+abstract MonoBehaviour
+note left of MonoBehaviour
+    From Unity
+end note
+
+interface IActivity {
+    +Erase()
+    +IsEnabled(): bool
+    'IsAlive(): bool
+}
+
+interface IBulletActivity {
+    +Shot(speed: float; angle: float)
+}
+
+interface IEnemyActivity {
+    +Spawned(speed: float; angle: float; hitPoint: int)
+}
+
+interface IPlayerActivity {
+    +Spawned()
+}
+
+IBulletActivity --|> IActivity
+IEnemyActivity --|> IActivity
+IPlayerActivity --|> IActivity
+
+interface IPhysicalState {
+    -angle: float
+    -speed: float
+    -rigidBody2D
+    +GetPosition(): Vector2
+    +SetPosition(position: Vector2)
+    +GetAngle(): float
+    +SetAngle(angle: float)
+    +GetSpeed(): float
+    +SetSpeed(speed: float)
+}
+
+class AutoDisabling {
+    -existingCounter: uint
+    -isInside(): bool
+    -FixedUpdate()
+    -OnDisable()
+    -OnEnable()
+}
+
+interface IMover
+
+MonoBehaviour <|-- AutoDisabling
+IActivity <|-- IMover
+IMover --|> IPhysicalState
+AutoDisabling ..> IMover
+
+interface IInvincibility {
+    +IsInvincible(): bool
+    +TurnInvincible(frames: uint)
+}
+
+class Invincibility {
+    -invincibleCounter: int
+    -FixedUpdate()
+}
+
+IInvincibility <|.. Invincibility
+Invincibility --|> MonoBehaviour
+IInvincibility <.. Mover
+
+interface IHealth {
+    -damage: int
+    -hitPoint: int
+    +GetDamage(): int
+    +GetHitPoint(): int
+}
+
+abstract Mover {
+    -OnTriggerEnter2D(other)
+    #{abstract} FixedUpdate()
+}
+
+MonoBehaviour <|-- Mover
+Mover ..|> IMover
+IHealth <|.. Mover
+
+class Bullet {
+    #FixedUpdate()
+}
+
+class Enemy {
+    #FixedUpdate()
+}
+
+class Player {
+    +SetVelocity()
+    #FixedUpdate()
+}
+
+Mover <|-- Bullet
+Bullet ..|> IBulletActivity
+Mover <|-- Enemy
+Enemy ..|> IEnemyActivity
+Player --|> Mover
+Player ..|> IPlayerActivity
+
+class EnemyBullet
+class PlayerBullet
+
+EnemyBullet --|> Bullet
+PlayerBullet --|> Bullet
+
+class NormalEnemy
+class BossEnemy
+
+NormalEnemy --|> Enemy
+BossEnemy --|> Enemy
+
+class PlayerCharacter
+class PlayerOption
+
+PlayerOption --|> Player
+PlayerCharacter --|> Player
+
+class ObjectPool
+note left of ObjectPool
+    From Unity
+end note
+
+enum ObjectID
+
+abstract Manager {
+    -pool: List<IActivity>
+    +GenerateObject(id: ObjectID)
+    +Release(object: IActivity)
+}
+note right of Manager
+    Generics
+end note
+
+IActivity "0..*" --o "1" Manager
+Manager ..> ObjectPool
+Manager ..> ObjectID
+
+interface IAnimation {
+    #clipFromImage(countedFrames: int)
+}
+
+class BulletAnimation {
+    -clip: Sprite
+    -spriteRenderer
+    -Update()
+}
+
+class EnemyAnimation {
+    -clips: Sprite[]
+    -spriteRenderer
+    -Update()
+}
+
+class PlayerAnimation {
+    -clips: Sprite[]
+    -spriteRenderer
+    -Update()
+}
+
+IAnimation <|.. BulletAnimation
+IAnimation <|.. EnemyAnimation
+IAnimation <|.. PlayerAnimation
+BulletAnimation --|> MonoBehaviour
+EnemyAnimation --|> MonoBehaviour
+PlayerAnimation --|> MonoBehaviour
+@enduml
