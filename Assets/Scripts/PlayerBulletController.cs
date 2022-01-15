@@ -54,7 +54,7 @@ class PlayerBullet : Bullet
     /// <param name="spriteRenderer">委譲されるスプライト</param>
     /// <param name="rigid2D">委譲される物理演算クラス</param>
     public PlayerBullet(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D)
-        : base(transform, spriteRenderer, rigid2D, 1)
+        : base(transform, spriteRenderer, rigid2D, 4)
     {
         _clip = spriteRenderer.sprite;
     }
