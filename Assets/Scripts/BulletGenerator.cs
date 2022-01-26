@@ -99,14 +99,14 @@ public class BulletGenerator : MoverGenerator<BulletController, BulletID>
     void Awake()
     {
         // 予めオブジェクトを生成しておく場合はここに記述。
-        var bulletsList = new List<IBullet>();
+        var bulletsList = new List<IBulletActivity>();
         //foreach (BulletID id in System.Enum.GetValues(typeof(BulletID)))
         foreach (var pair in _preloadedObjects.GetTable())
             for (var i = 1; i <= pair.Value; i++)
             {
-                var bullet = GenerateObject(pair.Key, new Vector2(0, 300));
-                bullet.Shot(0.0f, 0.0f);
-                bulletsList.Add(bullet);
+                //var bullet = GenerateObject(pair.Key, new Vector2(0, 300));
+                //bullet.Shot(0.0f, 0.0f);
+                //bulletsList.Add(bullet);
             }
         bulletsList.Select(bullet => { bullet.Erase(); return bullet; });
     }

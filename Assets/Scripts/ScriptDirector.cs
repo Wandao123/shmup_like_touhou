@@ -45,7 +45,7 @@ public class ScriptDirector : MonoBehaviour
     [SerializeField]
     private BulletGenerator _playerBulletGenerator;
     private Script _script;
-    private PlayerController _player = null;
+    private Player _player = null;
 
     // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
     public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
@@ -80,13 +80,16 @@ public class ScriptDirector : MonoBehaviour
 
     void Start()
     {
-        _playerSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
-        //StartCoroutine(playerScript());
+        //_playerSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
+        var playerObject = GameObject.Find("Reimu");
+        _playerSize = Vector2Int.RoundToInt(playerObject.GetComponent<SpriteRenderer>().sprite.bounds.size);
+        _player = new Player(playerObject.GetComponent<PlayerController>(), playerObject.GetComponent<ICollisionHandler>(), playerObject.GetComponent<IInvincibility>());
+        StartCoroutine(playerScript());
         //StartCoroutine(stageScript());
 
         registerConstants();
-        _script.DoFile("Assets/lua_scripts/main.lua");
-        StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
+        //_script.DoFile("Assets/lua_scripts/main.lua");
+        //StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 
     void Update()
@@ -108,9 +111,9 @@ public class ScriptDirector : MonoBehaviour
         UserData.RegisterType<CommandID>();
         UserData.RegisterType<EnemyID>();
         UserData.RegisterType<PlayerID>();
-        UserData.RegisterType<BulletController>();
-        UserData.RegisterType<EnemyController>();
-        UserData.RegisterType<PlayerController>();
+        //UserData.RegisterType<BulletController>();
+        //UserData.RegisterType<EnemyController>();
+        //UserData.RegisterType<PlayerController>();
     }
 
     private void registerConstants()
@@ -134,7 +137,7 @@ public class ScriptDirector : MonoBehaviour
 
     private void registerGlueFunctions()
     {
-        Func<BulletID, float, float, float, float, IBullet> generateBullet =
+        /*Func<BulletID, float, float, float, float, IBullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
             var newObject = _enemyBulletGenerator.GenerateObject(id, new Vector2(posX, posY));
@@ -183,7 +186,7 @@ public class ScriptDirector : MonoBehaviour
             function StartCoroutine(func, ...)
                 StartCoroutineWithArgs(func, {...})
             end
-        ");
+        ");*/
     }
 
     private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)
@@ -212,7 +215,7 @@ public class ScriptDirector : MonoBehaviour
 
         IEnumerator initialize()
         {
-            _player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
+            //_player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
             _player.Spawned();
             _player.TurnInvincible(InvincibleFrames / 2);
             yield break;
@@ -228,7 +231,7 @@ public class ScriptDirector : MonoBehaviour
                 yield return null;
                 for (var i = 1; i <= InputDelayFrames; i++)
                 {
-                    _player.MovePosition(_player.Position + new Vector2(0.0f, 1.0f));
+                    _player.Position += new Vector2(0.0f, 1.0f);
                     yield return null;
                 }
             }
@@ -251,8 +254,8 @@ public class ScriptDirector : MonoBehaviour
             {
                 if (_inputActions.Player.Shot.IsPressed())
                 {
-                    _playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
-                    _playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    //_playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    //_playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
                     //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
@@ -292,7 +295,7 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        var smallRedFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        /*var smallRedFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
         smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         var smallBlueFairy = _enemyGenerator.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
         smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
@@ -313,6 +316,7 @@ public class ScriptDirector : MonoBehaviour
             yield return null;
         }
         smallRedFairy.Speed = 0.0f;
-        smallBlueFairy.Speed = 0.0f;
+        smallBlueFairy.Speed = 0.0f;*/
+        yield return null;
     }
 }

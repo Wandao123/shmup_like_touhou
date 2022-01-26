@@ -4,36 +4,95 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public interface IMover
+public interface IController : IActivity, IPhysicalState {}
+
+/// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
+/// <remarks>
+/// デフォルトでenabledにfalseを設定するため、生成しただけでは更新されない。継承先で「実体化関数」を定義する必要がある。名前を別にしたのは、各クラスで渡すべき引数が異なるため。
+/// </remarks>
+public abstract class MoverController : MonoBehaviour, IController
 {
-    Vector2 Position { get; set; }
-    float Speed { get; set; }
-    float Angle { get; set; }
-    int Damage { get; }
-    int HitPoint { get; }
+    protected Rigidbody2D _rigid2D;
+    private const float MovingThreshold = 80 * 80;  // Rigidbody2D.MovePositionを使うか否かの基準。値自体は当てずっぽう。
+    private bool _enabled = false;  // パラメータを更新するか否かのフラグ。
+    //private Vector2 _position = Vector2.zero;
+    private float _speed = 0.0f;
+    private float _angle = 0.5f * Mathf.PI;
+    //private Action move = () => {};  // 位置を変化させるための関数。Rigidbody2D.positionに代入するべきか、Rigidbody2D.MovePositionを呼ぶべきか適宜切り替える。
 
-    void Erase();
-    bool IsEnabled();
-    bool IsInvincible();
-    void MovePosition(Vector2 position);
-    void TurnInvincible(uint frames);
-}
+    public Vector2 Position
+    {
+        /*get { return _position; }
+        set
+        {
+            //_position = value;
+            if (_rigid2D.simulated)
+                if (value.sqrMagnitude > MovingThreshold)
+                    move = () => { _rigid2D.position = value; };
+                else
+                    move = () => { _rigid2D.MovePosition(value); };
+            else
+                move = () => { transform.position = value; };
+        }*/
+        get { return transform.position; }
+        set {
+            if (_rigid2D.simulated)
+                if (value.sqrMagnitude > MovingThreshold)
+                   _rigid2D.position = value;
+                else
+                    _rigid2D.MovePosition(value);
+            else
+                transform.position = value;
+        }
+    }
 
-// ***ControllerクラスはMonoBehaviourクラスを継承したもの（アタッチ可能）。
-// MonoBehaviorのメソッドに加えて、***と同名のクラスと同じインターフェイスを持つ。
-// Controllerと名の付く抽象クラスは***Generatorクラスに共用管理される。
-public abstract class MoverController<ForwardedMover> : MonoBehaviour, IMover
-    where ForwardedMover : Mover  // 処理を委譲するクラス。
-{
-    protected ForwardedMover _mover;  // 継承先のAwakeで初期化するする必要あり。
+    public float Speed
+    {
+        get { return _speed; }
+        set
+        {
+            if (_enabled)
+                _speed = value;
+        }
+    }
 
-    public Vector2 Position { get => _mover.Position; set => _mover.Position = value; }
-    public float Speed { get => _mover.Speed; set => _mover.Speed = value; }
-    public float Angle { get => _mover.Angle; set => _mover.Angle = value; }
-    public int Damage { get => _mover.Damage; }
-    public int HitPoint { get => _mover.HitPoint; }
+    public virtual float Angle
+    {
+        get { return _angle; }
+        set
+        {
+            if (_enabled)
+                _angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
+        }
+    }
 
-    // Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
+    public virtual Vector2 Velocity
+    {
+        get { return new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle)); }
+        set
+        {
+            if (_enabled)
+            {
+                _speed = value.magnitude;
+                _angle = Mathf.Atan2(value.y, value.x);
+            }
+        }
+    }
+
+    protected virtual void Awake()
+    {
+        _rigid2D = GetComponent<Rigidbody2D>();
+        _rigid2D.simulated = false;
+    }
+
+    protected virtual void FixedUpdate()
+    {
+        //move();
+        //_rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+    }
+
+    /*// Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
     public float PosX
     {
         get { return _mover.Position.x; }
@@ -51,141 +110,11 @@ public abstract class MoverController<ForwardedMover> : MonoBehaviour, IMover
             position.y = value;
             _mover.Position = position;
         }
-    }
+    }*/
 
     public virtual void Erase()
     {
-        _mover.Erase();
-    }
-
-    public bool IsEnabled()
-    {
-        return _mover.IsEnabled();
-    }
-
-    public bool IsInvincible()
-    {
-        return _mover.IsInvincible();
-    }
-
-    public void MovePosition(Vector2 position)
-    {
-        _mover.MovePosition(position);
-    }
-
-    public void TurnInvincible(uint frames)
-    {
-        _mover.TurnInvincible(frames);
-    }
-}
-
-/// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
-/// <remarks>
-/// デフォルトでenabledにfalseを設定するため、生成しただけでは更新されない。継承先で「実体化関数」を定義する必要がある。名前を別にしたのは、各クラスで渡すべき引数が異なるため。
-/// </remarks>
-public abstract class Mover : IMover
-{
-    protected Transform _transform;
-    protected SpriteRenderer _spriteRenderer;
-    protected Rigidbody2D _rigid2D;
-    protected float _speed;  // 単位：ドット毎フレーム
-    protected float _angle;  // x軸を基準とした角度。時計回りの方向を正とする。
-    protected int _damage;  // 衝突時に相手に与えるダメージ。
-    protected int _hitPoint;  // 体力。「消滅」と「撃破」とを区別するために弾でも設定が必須。外部からこれを参照する以外に、OnCollideに返り値を持たせる実装でも良いかもしれない。
-    protected bool _enabled = false;  // パラメータを更新するか否かのフラグ。
-    protected uint _invincibleCounter = 0;  // 無敵状態になっている残りのフレーム数。
-    private uint _existingCounter = 0;  // enabledがtrueになってからのフレーム数。
-    private readonly Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ拡げた座標。
-
-    /// <summary>画面外にあるために無効にするか否かを判定。</summary>
-    private Action disableIfOutside;
-
-    /// <summary>ゲーム内で衝突判定するオブジェクトの処理を委譲。</summary>
-    /// <param name="transform">委譲される位置</param>
-    /// <param name="spriteRenderer">委譲されるスプライト</param>
-    /// <param name="rigid2D">委譲される物理演算クラス</param>
-    /// <param name="speed">初期速度の速さ</param>
-    /// <param name="angle">初期速度の方向</param>
-    /// <param name="damage">衝突時に相手に与えるダメージ</param>
-    /// <param name="hitPoint">体力</param>
-    /// <param name="autoDisabling">画面外に出たら自動的に無効にするか否か</param>
-    public Mover(in Transform transform, in SpriteRenderer spriteRenderer, in Rigidbody2D rigid2D, float speed, float angle, int damage, int hitPoint, bool autoDisabling = true)
-    {
-        _transform = transform;
-        _spriteRenderer = spriteRenderer;
-        _rigid2D = rigid2D;
-        _speed = speed;
-        _angle = angle;
-        _damage = damage;
-        _hitPoint = hitPoint;
-        float width = spriteRenderer.bounds.size.x;
-        float height = spriteRenderer.bounds.size.y;
-        ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) - (new Vector3(width, height, 0) * 0.5f);
-        ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) + (new Vector3(width, height, 0) * 0.5f);
-
-        if (autoDisabling)
-            disableIfOutside = () =>
-            {
-                ++_existingCounter;
-                if (!isInside())
-                    Erase();
-            };
-        else
-            disableIfOutside = () => {};
-    }
-
-    public Vector2 Position
-    {
-        get { return _transform.position; }
-        set {
-            if (_rigid2D.simulated)
-                _rigid2D.position = value;
-            else
-                _transform.position = value;
-        }
-    }
-
-    public float Speed
-    {
-        get { return _speed; }
-        set {
-            if (_enabled)
-                _speed = value;
-        }
-    }
-    public virtual float Angle
-    {
-        get { return _angle; }
-        set {
-            if (_enabled)
-                _angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
-        }
-    }
-    public int Damage { get => _damage; }
-    public int HitPoint { get => _hitPoint; }
-
-    /// <summary>MonoBehaviorのUpdateから呼ばれる処理。</summary>
-    public virtual void Update()
-    {
-        _spriteRenderer.sprite = clipFromImage(Time.frameCount);
-    }
-
-    /// <summary>MonoBehaviorのFixedUpdateから呼ばれる処理。</summary>
-    public virtual void FixedUpdate()
-    {
-        _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
-        _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
-        disableIfOutside();
-    }
-
-    // 参考：https://nknkybigames.hatenablog.com/entry/2018/03/08/185122
-    //       https://gomafrontier.com/unity/1189
-    /// <summary>MonoBehaviorのOnCollisionEnter2Dから呼ばれる処理。</summary>
-    public abstract void OnCollisionEnter2D(in IMover mover);
-
-    public void Erase()
-    {
-        _spriteRenderer.enabled = false;
+        GetComponent<SpriteAnimator>().enabled = false;
         _rigid2D.simulated = false;
         _enabled = false;
     }
@@ -195,58 +124,55 @@ public abstract class Mover : IMover
         return _enabled;
     }
 
-    public bool IsInvincible()
+    protected void spawned()
     {
-        return _invincibleCounter > 0;
+        GetComponent<SpriteAnimator>().enabled = true;
+        _rigid2D.simulated = true;
+        _enabled = true;
+    }
+}
+
+// ラッパークラス。
+public abstract class Mover<TController> : IController, ICollisionHandler, IInvincibility
+    where TController : MoverController
+{
+    protected TController _controller;
+    private ICollisionHandler _collisionHandler;
+    private IInvincibility _invincibility;
+
+    public Mover(TController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
+    {
+        _controller = controller;
+        _collisionHandler = collisionHandler;
+        _invincibility = invincibility;
     }
 
-    // MovePositionメソッドはごく短い時間での移動にしか適さない（Rigidbody2Dのマニュアルを参照）ので、
-    // 一気に動く場合はPositionプロパティ、それ以外はこのメソッドを使うこと。
-    public void MovePosition(Vector2 position)
+    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
+    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
+    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
+    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
+    public int Damage { get => _collisionHandler.Damage; }
+    public int HitPoint { get => _collisionHandler.HitPoint; }
+    public uint InvincibleCount { get => _invincibility.InvincibleCount; }
+
+    public void Erase()
     {
-        _rigid2D.MovePosition(position);
+        _controller.Erase();
+    }
+
+    public bool IsEnabled()
+    {
+        return _controller.IsEnabled();
+    }
+
+    public bool IsInvincible()
+    {
+        return _invincibility.IsInvincible();
     }
 
     public void TurnInvincible(uint frames)
     {
-        _invincibleCounter = frames;
-    }
-
-    protected virtual void spawned()
-    {
-        _spriteRenderer.enabled = true;
-        _rigid2D.simulated = true;
-        _enabled = true;
-	    _existingCounter = 0;
-    }
-
-    /// <summary>現在のフレームにおける切り取られた画像を返す。</summary>
-    /// <param name="currentFrames">現在までのフレーム数</param>
-    /// <returns>切り取られたスプライト</returns>
-    protected abstract Sprite clipFromImage(int countedFrames);
-
-    /// <summary>オブジェクトが画面内に存在するか？</summary>
-    /// <returns>存在すれば真、しなければ偽</returns>
-    /// <remarks>
-    /// 生成されてから最初の1秒（60フレーム）は判定せずに真を返す。画面外でも0.1秒（6フレーム）以内に画面内に戻れば真を返す。なお、ここでいう「存在」とはオブジェクトの画像の一部でも画面内にあることを意味する。
-    /// </remarks>
-	private bool isInside()
-    {
-        if (_existingCounter < 60)
-            return true;
-        if (this.Position.x < ScreenMinimum.x || this.Position.x > ScreenMaximum.x
-                || this.Position.y < ScreenMinimum.y || this.Position.y > ScreenMaximum.y)
-        {
-            if (_existingCounter > 66)
-                return false;
-            else
-                return true;
-        }
-        else
-        {
-            _existingCounter = 60;
-            return true;
-        }
+        _invincibility.TurnInvincible(frames);
     }
 }
 
@@ -256,20 +182,22 @@ public abstract class Mover : IMover
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
-    where TMoverController : IMover
+public abstract class MoverGenerator<TController, ID> : MonoBehaviour
+    where TController : MoverController
     where ID : Enum
 {
-    public IList<TMoverController> ObjectsList
+    private List<TController> pool;
+
+    /*public IList<TMover> ObjectsList
     {
         get {
-            var temp = new List<TMoverController>();
+            var temp = new List<TMover>();
             foreach (Transform child in transform)
-                if (child.GetComponent<TMoverController>() is var mover && mover.IsEnabled())
-                    temp.Add(mover);
+                if (child.GetComponent<IActivity>() is var mover && mover.IsEnabled())
+                    temp.Add(mover );
             return temp;
         }
-    }
+    }*/
 
     /// <summary>未使用のMoverController型のオブジェクトを子オブジェクトから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
     /// <param name="id">複製するプレハブに対応する列挙名</param>
@@ -280,14 +208,16 @@ public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
     /// また、ステージを作成する上でGameObject自体をそのまま扱うことは少ないと判断したので、返り値はControllerクラスである。
     /// GameObject自体を扱いたい場合は、このクラスの子オブジェクトを参照すれば良い。
     /// </remarks>
-    public TMoverController GenerateObject(ID id, Vector2 position)
+    protected Mover<TController> GenerateObject(ID id, Vector2 position, Func<IController, ICollisionHandler, IInvincibility, TController> generator)
     {
-        foreach (Transform child in transform)
+        /*foreach (Transform child in transform)
             // 変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
-            if (child.name == id.ToString() && child.GetComponent<TMoverController>() is var mover && !mover.IsEnabled())
+            if (child.name == id.ToString() && child.GetComponent<IController>() is var controller && !controller.IsEnabled())
             {
-                child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
-                return mover;
+                //child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
+                controller.Position = position;
+                // TODO: poolから取り出す。
+                return generator(controller, child.GetComponent<ICollisionHandler>(), child.GetComponent<IInvincibility>());
             }
         //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
         //var newObject = Instantiate(prefab, position, Quaternion.identity) as GameObject;
@@ -295,6 +225,7 @@ public abstract class MoverGenerator<TMoverController, ID> : MonoBehaviour
         //newObject.transform.parent = this.transform;
         var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, this.transform).WaitForCompletion();
         newObject.name = id.ToString();
-        return newObject.GetComponent<TMoverController>();
+        return generator(newObject.GetComponent<IController>(), newObject.GetComponent<ICollisionHandler>(), newObject.GetComponent<IInvincibility>());*/
+        return null;
     }
 }

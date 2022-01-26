@@ -13,6 +13,9 @@ GameObject:
   - component: {fileID: 1670645704118649642}
   - component: {fileID: 1670645704118649643}
   - component: {fileID: 8091454530059077872}
+  - component: {fileID: 3183947127589480149}
+  - component: {fileID: 1457452450415842576}
+  - component: {fileID: 2784890899298884327}
   m_Layer: 12
   m_Name: ReimuNormalBullet
   m_TagString: Untagged
@@ -30,6 +33,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -45,6 +49,7 @@ SpriteRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -95,7 +100,7 @@ Rigidbody2D:
   m_GameObject: {fileID: 1670645704118649646}
   m_BodyType: 1
   m_Simulated: 0
-  m_UseFullKinematicContacts: 1
+  m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
@@ -134,4 +139,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba252903ff9e98860a1de3631b05b958, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3183947127589480149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3fc677c8954c03498b64b9c12f30989, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   _reference: ReimuShot
+--- !u!114 &1457452450415842576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ea7fdd15974e6949ae4a5083267aef1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _damage: 4
+  _hitPoint: 1
+--- !u!114 &2784890899298884327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7781c6de2769edc46b5e8fa4f7968ec1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

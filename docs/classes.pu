@@ -42,16 +42,15 @@ class AutoDisabling {
     -existingCounter: uint
     -isInside(): bool
     -FixedUpdate()
-    -OnDisable()
     -OnEnable()
 }
 
-interface IMover
+interface IController
 
 MonoBehaviour <|-- AutoDisabling
-IActivity <|-- IMover
-IMover --|> IPhysicalState
-AutoDisabling ..> IMover
+IActivity <|-- IController
+IController --|> IPhysicalState
+AutoDisabling ..> IController
 
 interface IInvincibility {
     +IsInvincible(): bool
@@ -65,43 +64,64 @@ class Invincibility {
 
 IInvincibility <|.. Invincibility
 Invincibility --|> MonoBehaviour
-IInvincibility <.. Mover
+IInvincibility <.. MoverController
 
-interface IHealth {
+interface ICollisionHandler {
     -damage: int
     -hitPoint: int
     +GetDamage(): int
     +GetHitPoint(): int
 }
 
-abstract Mover {
-    -OnTriggerEnter2D(other)
+abstract CollisionHandler {
+    #{abstract} OnTriggerEnter2D(other)
+}
+
+class BulletCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class EnemyCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class PlayerCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+MonoBehaviour <|-- CollisionHandler
+CollisionHandler ..|> ICollisionHandler
+CollisionHandler "1" --o IActivity
+CollisionHandler <|-- BulletCollisionHandler
+CollisionHandler <|-- EnemyCollisionHandler
+CollisionHandler <|-- PlayerCollisionHandler
+
+abstract MoverController {
     #{abstract} FixedUpdate()
 }
 
-MonoBehaviour <|-- Mover
-Mover ..|> IMover
-IHealth <|.. Mover
+MonoBehaviour <|-- MoverController
+MoverController ..|> IController
 
-class Bullet {
+class BulletController {
     #FixedUpdate()
 }
 
-class Enemy {
+class EnemyController {
     #FixedUpdate()
 }
 
-class Player {
+class PlayerController {
     +SetVelocity()
     #FixedUpdate()
 }
 
-Mover <|-- Bullet
-Bullet ..|> IBulletActivity
-Mover <|-- Enemy
-Enemy ..|> IEnemyActivity
-Player --|> Mover
-Player ..|> IPlayerActivity
+MoverController <|-- BulletController
+BulletController ..|> IBulletActivity
+MoverController <|-- EnemyController
+EnemyController ..|> IEnemyActivity
+PlayerController --|> MoverController
+PlayerController ..|> IPlayerActivity
 
 /'class EnemyBullet
 class PlayerBullet
@@ -115,16 +135,16 @@ class BossEnemy
 NormalEnemy --|> Enemy
 BossEnemy --|> Enemy'/
 
-class PlayerCharacter {
+class PlayerCharacterController {
     #FixedUpdate()
 }
 
-class PlayerOption {
+class PlayerOptionController {
     #FixedUpdate()
 }
 
-PlayerOption --|> Player
-PlayerCharacter --|> Player
+PlayerOptionController --|> PlayerController
+PlayerCharacterController --|> PlayerController
 
 class ObjectPool
 note left of ObjectPool
@@ -163,45 +183,45 @@ PlayerManager ..> PlayerID
 PlayerManager --|> MoverManager
 IPlayerActivity "0..*" --o "1" PlayerManager
 
-abstract SpriteAnimation {
+abstract SpriteAnimator {
     #{abstract} clipFromImage(countedFrames: int)
     -Update()
 }
 
-class BulletAnimation {
+class BulletAnimator {
     -clip: Sprite
     -spriteRenderer
     #clipFromImage(countedFrames: int)
 }
 
-class NormalEnemyAnimation {
+class NormalEnemyAnimator {
     -clips: Sprite[]
     -spriteRenderer
     #clipFromImage(countedFrames: int)
 }
 
-class BossEnemyAnimation {
+class BossEnemyAnimator {
     -clips: Sprite[]
     -spriteRenderer
     #clipFromImage(countedFrames: int)
 }
 
-class PlayerCharacterAnimation {
+class PlayerCharacterAnimator {
     -clips: Sprite[,]
     -spriteRenderer
     #clipFromImage(countedFrames: int)
 }
 
-class PlayerOptionAnimation {
+class PlayerOptionAnimator {
     -clip: Sprite
     -spriteRenderer
     #clipFromImage(countedFrames: int)
 }
 
-BulletAnimation --|> SpriteAnimation
-NormalEnemyAnimation --|> SpriteAnimation
-BossEnemyAnimation --|> SpriteAnimation
-PlayerCharacterAnimation --|> SpriteAnimation
-PlayerOptionAnimation --|> SpriteAnimation
-SpriteAnimation --|> MonoBehaviour
+BulletAnimator --|> SpriteAnimator
+NormalEnemyAnimator --|> SpriteAnimator
+BossEnemyAnimator --|> SpriteAnimator
+PlayerCharacterAnimator --|> SpriteAnimator
+PlayerOptionAnimator --|> SpriteAnimator
+SpriteAnimator --|> MonoBehaviour
 @enduml
