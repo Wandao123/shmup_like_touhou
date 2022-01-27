@@ -27,8 +27,8 @@ local function TestBenchmark()
 	local maxIteration = 60
 	local diffAngle = 2 * math.pi / ways
 	for i = 1, maxIteration do
-		local playerDirFromRed = math.atan2(playerScript:GetPlayer().PosY - redEnemy.PosY, playerScript:GetPlayer().PosX - redEnemy.PosX)
-		local playerDirFromBlue = math.atan2(playerScript:GetPlayer().PosY - blueEnemy.PosY, playerScript:GetPlayer().PosX - blueEnemy.PosX)
+		local playerDirFromRed = stg:CalcAngleBetween(redEnemy, playerScript:GetPlayer())
+		local playerDirFromBlue = stg:CalcAngleBetween(blueEnemy, playerScript:GetPlayer())
 		for j = -(ways - 1) / 2, (ways - 1) / 2 do
 			stg:CreateBullet(BulletID.SmallRedBullet, redEnemy, 2, playerDirFromRed + j * diffAngle)
 			stg:CreateBullet(BulletID.SmallBlueBullet, blueEnemy, 2, playerDirFromBlue + j * diffAngle)

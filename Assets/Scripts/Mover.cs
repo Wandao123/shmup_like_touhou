@@ -24,7 +24,7 @@ public abstract class MoverController : MonoBehaviour, IController
         get { return transform.position; }
         set {
             if (_rigid2D.simulated)
-                if (value.sqrMagnitude > MovingThreshold)
+                if ((value - Position).sqrMagnitude > MovingThreshold)
                    _rigid2D.position = value;
                 else
                     _rigid2D.MovePosition(value);
@@ -64,26 +64,6 @@ public abstract class MoverController : MonoBehaviour, IController
         _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
-    /*// Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
-    public float PosX
-    {
-        get { return _mover.Position.x; }
-        set {
-            var position = _mover.Position;
-            position.x = value;
-            _mover.Position = position;
-        }
-    }
-    public float PosY
-    {
-        get { return _mover.Position.y; }
-        set {
-            var position = _mover.Position;
-            position.y = value;
-            _mover.Position = position;
-        }
-    }*/
-
     public virtual void Erase()
     {
         GetComponent<SpriteAnimator>().enabled = false;
@@ -101,49 +81,6 @@ public abstract class MoverController : MonoBehaviour, IController
         GetComponent<SpriteAnimator>().enabled = true;
         _rigid2D.simulated = true;
         _enabled = true;
-    }
-}
-
-// ラッパークラス。
-public abstract class Mover<TController> : IController, ICollisionHandler, IInvincibility
-    where TController : MoverController
-{
-    protected TController _controller;
-    private ICollisionHandler _collisionHandler;
-    private IInvincibility _invincibility;
-
-    public Mover(TController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
-    {
-        _controller = controller;
-        _collisionHandler = collisionHandler;
-        _invincibility = invincibility;
-    }
-
-    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
-    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
-    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
-    public int Damage { get => _collisionHandler.Damage; }
-    public int HitPoint { get => _collisionHandler.HitPoint; }
-    public uint InvincibleCount { get => _invincibility.InvincibleCount; }
-
-    public void Erase()
-    {
-        _controller.Erase();
-    }
-
-    public bool IsEnabled()
-    {
-        return _controller.IsEnabled();
-    }
-
-    public bool IsInvincible()
-    {
-        return _invincibility.IsInvincible();
-    }
-
-    public void TurnInvincible(uint frames)
-    {
-        _invincibility.TurnInvincible(frames);
     }
 }
 

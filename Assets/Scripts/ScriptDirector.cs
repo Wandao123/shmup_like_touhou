@@ -41,7 +41,7 @@ public class ScriptDirector : MonoBehaviour
     private BulletManager _enemyBulletManager;
     private BulletManager _playerBulletManager;
     private Script _script;
-    private Player _player = null;
+    private Player _player;
 
     // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
     public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
@@ -81,12 +81,12 @@ public class ScriptDirector : MonoBehaviour
     void Start()
     {
         _playerSize = _playerManager.CharacterSize;
-        StartCoroutine(playerScript());
-        StartCoroutine(stageScript());
+        //StartCoroutine(playerScript());
+        //StartCoroutine(stageScript());
 
         registerConstants();
-        //_script.DoFile("Assets/lua_scripts/main.lua");
-        //StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
+        _script.DoFile("Assets/lua_scripts/main.lua");
+        StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 
     void Update()
@@ -134,43 +134,65 @@ public class ScriptDirector : MonoBehaviour
 
     private void registerGlueFunctions()
     {
-        /*Func<BulletID, float, float, float, float, IBullet> generateBullet =
+        Func<BulletID, float, float, float, float, Bullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
             var newObject = _enemyBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
-            return newObject;
+            return new Bullet(
+                newObject.GetComponent<BulletController>(),
+                newObject.GetComponent<ICollisionHandler>()
+            );
         };
         _script.Globals["GenerateBullet"] = generateBullet;
 
-        Func<BulletID, float, float, float, float, IBullet> generatePlayerBullet =
+        Func<BulletID, float, float, float, float, Bullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
             var newObject = _playerBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
-            return newObject;
+            return new Bullet(
+                newObject.GetComponent<BulletController>(),
+                newObject.GetComponent<ICollisionHandler>()
+            );
         };
         _script.Globals["GeneratePlayerBullet"] = generatePlayerBullet;
 
-        Func<EnemyID, float, float, float, float, int, IEnemy> generateEnemy =
+        Func<EnemyID, float, float, float, float, int, Enemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
         {
             var newObject = _enemyManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned(speed, angle, hitPoint);
-            return newObject;
+            return new Enemy(
+                newObject.GetComponent<EnemyController>(),
+                newObject.GetComponent<ICollisionHandler>(),
+                newObject.GetComponent<IInvincibility>()
+            );
         };
         _script.Globals["GenerateEnemy"] = generateEnemy;
 
-        Func<PlayerID, float, float, IPlayer> generatePlayer =
+        Func<PlayerID, float, float, Player> generatePlayer =
         (PlayerID id, float posX, float posY) =>
         {
             var newObject = _playerManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned();
-            return newObject;
+            return new Player(
+                newObject.GetComponent<PlayerController>(),
+                newObject.GetComponent<ICollisionHandler>(),
+                newObject.GetComponent<IInvincibility>()
+            );
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
-        Func<IPlayer> getPlayer = () => _playerManager.GetPlayer();
+        Func<Player> getPlayer = () =>
+        {
+            var player = _playerManager.GetPlayer();
+            return new Player(
+                player.GetComponent<PlayerController>(),
+                player.GetComponent<ICollisionHandler>(),
+                player.GetComponent<IInvincibility>()
+            );
+        };
         _script.Globals["GetPlayer"] = getPlayer;
 
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
@@ -183,7 +205,7 @@ public class ScriptDirector : MonoBehaviour
             function StartCoroutine(func, ...)
                 StartCoroutineWithArgs(func, {...})
             end
-        ");*/
+        ");
     }
 
     private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)

@@ -34,7 +34,7 @@ end
 function stg:CreateBullet(id, enemy, speed, angle)
 	local bullet = nil
 	if enemy:IsEnabled() then
-		bullet = GenerateBullet(id, enemy.PosX, enemy.PosY, speed, angle)
+		bullet = GenerateBullet(id, enemy.Position.x, enemy.Position.y, speed, angle)
 	end
 	return bullet
 end
@@ -44,9 +44,10 @@ function stg:DivideInternallyScreenTop(a, b)
 	return ScreenTopLeft * b / (a + b) + ScreenTopRight * a / (a + b)
 end
 
--- 或るオブジェクトから或るオブジェクトへの方向。
+-- 或るオブジェクトから或るオブジェクトへの方向。第1引数を始点、第2引数を終点とする。
 function stg:CalcAngleBetween(obj1, obj2)
-	return math.atan2(obj2.PosY - obj1.PosY, obj2.PosX - obj1.PosX)
+	local relative = obj2.Position - obj1.Position
+	return math.atan2(relative.y, relative.x)
 end
 
 return stg

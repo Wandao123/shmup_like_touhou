@@ -27,12 +27,30 @@ public abstract class EnemyController : MoverController, IEnemyActivity
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public class Enemy : Mover<EnemyController>, IEnemyActivity
+public struct Enemy : IEnemyActivity, IPhysicalState, ICollisionHandler, IInvincibility
 {
-    public Enemy(EnemyController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
-        : base(controller, collisionHandler, invincibility)
-    {}
+    private EnemyController _controller;
+    private ICollisionHandler _collisionHandler;
+    private IInvincibility _invincibility;
 
+    public Enemy(EnemyController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
+    {
+        _controller = controller;
+        _collisionHandler = collisionHandler;
+        _invincibility = invincibility;
+    }
+
+    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
+    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
+    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
+    public int Damage { get => _collisionHandler.Damage; }
+    public int HitPoint { get => _collisionHandler.HitPoint; }
+    public uint InvincibleCount { get => _invincibility.InvincibleCount; }
+
+    public void Erase() => _controller.Erase();
+    public bool IsEnabled() => _controller.IsEnabled();
+    public bool IsInvincible() => _invincibility.IsInvincible();
+    public void TurnInvincible(uint frames) => _invincibility.TurnInvincible(frames);
     public void Spawned(float speed, float angle, int hitPoint) => _controller.Spawned(speed, angle, hitPoint);
 }
 

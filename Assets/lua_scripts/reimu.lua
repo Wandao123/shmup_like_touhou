@@ -11,10 +11,10 @@ local parameters = {
 	ShotDelayFrames = 6,
 	BulletSpeed = 30.0,
 	OptionAlignment = {
-		{ PlayerSize.x, PlayerSize.y / 8 },
-		{ PlayerSize.x / 2, PlayerSize.y * 5 / 8 },
-		{ -PlayerSize.x / 2, PlayerSize.y * 5 / 8 },
-		{ -PlayerSize.x, PlayerSize.y / 8 }
+		Vector2.__new(PlayerSize.x, PlayerSize.y / 8),
+		Vector2.__new(PlayerSize.x / 2, PlayerSize.y * 5 / 8),
+		Vector2.__new(-PlayerSize.x / 2, PlayerSize.y * 5 / 8),
+		Vector2.__new(-PlayerSize.x, PlayerSize.y / 8)
 	}
 }
 
@@ -34,14 +34,13 @@ end
 -- 自機の復帰処理。
 local function Rebirth()
 	if (not player:IsEnabled()) and (player.HitPoint > 0) then
-		player.PosX = ScreenCenter.x
-		player.PosY = ScreenBottom.y - PlayerSize.y
+		player.Position = ScreenBottom - Vector2.__new(0, PlayerSize.y)
 		player:Spawned()
 		player:TurnInvincible(parameters.InvincibleFrames);
 		coroutine.yield()
 		for i = 1, parameters.InputDelayFrames do
-			-- ここでSetVelocityを使うと、移動制限処理のところで不具合が生じる。
-			player:MovePosition(player.Position + ScreenTop.normalized)
+			-- ここでVelocityを変更すると、移動制限処理のところで不具合が生じる。
+			player.Position = player.Position + ScreenTop.normalized
 			coroutine.yield()
 		end
 	end
@@ -50,24 +49,23 @@ end
 -- 自機の移動。復帰との兼ね合い（復帰中は入力を受け付けない）から、Playerクラス内で処理できない。
 local function Move()
 	while true do
-		local dirX, dirY = 0.0, 0.0
+		local dir = Vector2.__new()
 		if GetKey(CommandID.Leftward) then
-			dirX = ScreenLeft.x
+			dir.x = ScreenLeft.x
 		end
 		if GetKey(CommandID.Rightward) then
-			dirX = ScreenRight.x
+			dir.x = ScreenRight.x
 		end
 		if GetKey(CommandID.Forward) then
-			dirY = ScreenTop.y
+			dir.y = ScreenTop.y
 		end
 		if GetKey(CommandID.Backward) then
-			dirY = ScreenBottom.y
+			dir.y = ScreenBottom.y
 		end
 		player.SlowMode = GetKey(CommandID.Slow)
-		player:SetVelocity(dirX, dirY)
+		player.Velocity = dir
 		for i = 1, #options do
-			options[i].PosX = player.PosX + parameters.OptionAlignment[i][1]
-			options[i].PosY = player.PosY + parameters.OptionAlignment[i][2]
+			options[i].Position = player.Position + parameters.OptionAlignment[i]
 		end
 		coroutine.yield()
 	end
@@ -77,8 +75,8 @@ end
 local function Shoot()  -- 霊夢だと、当たり判定を中心から移動させているため、敵に近づきすぎると当たらなくなるバグあり。
 	while true do
 		if GetKey(CommandID.Shot) then
-			GeneratePlayerBullet(parameters.NormalShot, player.PosX - 12, player.PosY, parameters.BulletSpeed, math.pi / 2)
-			GeneratePlayerBullet(parameters.NormalShot, player.PosX + 12, player.PosY, parameters.BulletSpeed, math.pi / 2)
+			GeneratePlayerBullet(parameters.NormalShot, player.Position.x - 12, player.Position.y, parameters.BulletSpeed, math.pi / 2)
+			GeneratePlayerBullet(parameters.NormalShot, player.Position.x + 12, player.Position.y, parameters.BulletSpeed, math.pi / 2)
 			--GenerateEffect(EffectID.PlayerShotSound)
 			stg:Wait(parameters.ShotDelayFrames)
 		end

@@ -71,12 +71,25 @@ public abstract class BulletController : MoverController, IBulletActivity
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public class Bullet : Mover<BulletController>, IBulletActivity
+public struct Bullet : IBulletActivity, IPhysicalState, ICollisionHandler
 {
-    public Bullet(BulletController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
-        : base(controller, collisionHandler, invincibility)
-    {}
+    private BulletController _controller;
+    private ICollisionHandler _collisionHandler;
 
+    public Bullet(BulletController controller, ICollisionHandler collisionHandler)
+    {
+        _controller = controller;
+        _collisionHandler = collisionHandler;
+    }
+
+    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
+    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
+    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
+    public int Damage { get => _collisionHandler.Damage; }
+    public int HitPoint { get => _collisionHandler.HitPoint; }
+
+    public void Erase() => _controller.Erase();
+    public bool IsEnabled() => _controller.IsEnabled();
     public void Shot(float speed, float angle) => _controller.Shot(speed, angle);
 }
 

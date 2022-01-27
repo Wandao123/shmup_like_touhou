@@ -61,7 +61,15 @@ local function AllDirection(initPosX, ways)
 	end
 	if enemy:IsEnabled() then
 		for i = 0, ways - 1 do
-			stg:CreateBullet(bulletColor, enemy, 1, startingAngle + i * diffAngle)
+			stg:CreateBullet(bulletColor, enemy, 1.5, startingAngle + i * diffAngle)
+		end
+		--GenerateEffect(EffectID.EnemyShotSound)
+	end
+	stg:Wait(8)
+	if enemy:IsEnabled() then
+		for i = 0, ways - 1 do
+			stg:CreateBullet(bulletColor, enemy, 1.5, startingAngle + i * diffAngle)
+			stg:CreateBullet(bulletColor, enemy, 2.5, startingAngle + i * diffAngle)
 		end
 		--GenerateEffect(EffectID.EnemyShotSound)
 	end
