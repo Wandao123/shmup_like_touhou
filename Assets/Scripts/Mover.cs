@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 //using UnityEngine.Pool;
@@ -53,13 +54,13 @@ public abstract class MoverController : MonoBehaviour, IController
         }
     }
 
-    protected virtual void Awake()
+    public virtual void ManagedAwake()
     {
         _rigid2D = GetComponent<Rigidbody2D>();
         _rigid2D.simulated = false;
     }
 
-    protected virtual void FixedUpdate()
+    public virtual void ManagedFixedUpdate()
     {
         _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
@@ -95,7 +96,7 @@ public abstract class MoverManager<TController, ID>
     where ID : Enum
 {
     //IObjectPool<TContoller> _pool;
-    protected ICollection<IController> _pool;
+    protected ICollection<TController> _pool;
 
     public MoverManager()
     {
@@ -105,7 +106,7 @@ public abstract class MoverManager<TController, ID>
             onReturnedToPool,
             onDestroyPoolObject
         );*/
-        _pool = new List<IController>();
+        _pool = new List<TController>();
     }
 
     public ICollection<TController> ObjectsList
@@ -134,7 +135,6 @@ public abstract class MoverManager<TController, ID>
             // 変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
             if (pooledObject.name == id.ToString() && !pooledObject.IsEnabled())
             {
-                //child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
                 pooledObject.Position = position;
                 return pooledObject;
             }
@@ -144,8 +144,18 @@ public abstract class MoverManager<TController, ID>
         var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity).WaitForCompletion();
         newObject.name = id.ToString();
         var controller = newObject.GetComponent<TController>();
+        controller.ManagedAwake();
         _pool.Add(controller);
         return controller;
+    }
+
+    public void ManagedFixedUpdate()
+    {
+        //_pool.Where(pooledObject => pooledObject.IsEnabled())
+        //    .Select(pooledObject => { pooledObject.ManagedFixedUpdate(); return pooledObject; });
+        foreach (TController pooledObject in _pool)
+            if (pooledObject.IsEnabled())
+                pooledObject.ManagedFixedUpdate();
     }
 
     /*private TContoller onCreatePoolObject()

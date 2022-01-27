@@ -45,7 +45,7 @@ public abstract class PlayerController : MoverController, IPlayerActivity, IPlay
         }
     }
 
-    protected override void FixedUpdate()
+    public override void ManagedFixedUpdate()
     {
         _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }

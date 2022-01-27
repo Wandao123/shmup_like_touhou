@@ -46,7 +46,7 @@ public class ScriptDirector : MonoBehaviour
     // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
     public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
 
-    void Awake()
+    private void Awake()
     {
         _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
         _screenTopRight = Camera.main.ViewportToWorldPoint(Vector2.one);
@@ -78,7 +78,7 @@ public class ScriptDirector : MonoBehaviour
         UserData.RegisterAssembly();
     }
 
-    void Start()
+    private void Start()
     {
         _playerSize = _playerManager.CharacterSize;
         //StartCoroutine(playerScript());
@@ -89,12 +89,20 @@ public class ScriptDirector : MonoBehaviour
         StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 
-    void Update()
+    private void Update()
     {
         
     }
 
-    void OnDestroy()
+    private void FixedUpdate()
+    {
+        _enemyManager.ManagedFixedUpdate();
+        _playerManager.ManagedFixedUpdate();
+        _enemyBulletManager.ManagedFixedUpdate();
+        _playerBulletManager.ManagedFixedUpdate();
+    }
+
+    private void OnDestroy()
     {
         
     }
@@ -108,9 +116,6 @@ public class ScriptDirector : MonoBehaviour
         UserData.RegisterType<CommandID>();
         UserData.RegisterType<EnemyID>();
         UserData.RegisterType<PlayerID>();
-        //UserData.RegisterType<BulletController>();
-        //UserData.RegisterType<EnemyController>();
-        //UserData.RegisterType<PlayerController>();
     }
 
     private void registerConstants()
@@ -140,7 +145,7 @@ public class ScriptDirector : MonoBehaviour
             var newObject = _enemyBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return new Bullet(
-                newObject.GetComponent<BulletController>(),
+                newObject,
                 newObject.GetComponent<ICollisionHandler>()
             );
         };
@@ -152,7 +157,7 @@ public class ScriptDirector : MonoBehaviour
             var newObject = _playerBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return new Bullet(
-                newObject.GetComponent<BulletController>(),
+                newObject,
                 newObject.GetComponent<ICollisionHandler>()
             );
         };
@@ -164,7 +169,7 @@ public class ScriptDirector : MonoBehaviour
             var newObject = _enemyManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned(speed, angle, hitPoint);
             return new Enemy(
-                newObject.GetComponent<EnemyController>(),
+                newObject,
                 newObject.GetComponent<ICollisionHandler>(),
                 newObject.GetComponent<IInvincibility>()
             );
@@ -177,7 +182,7 @@ public class ScriptDirector : MonoBehaviour
             var newObject = _playerManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned();
             return new Player(
-                newObject.GetComponent<PlayerController>(),
+                newObject,
                 newObject.GetComponent<ICollisionHandler>(),
                 newObject.GetComponent<IInvincibility>()
             );
@@ -188,7 +193,7 @@ public class ScriptDirector : MonoBehaviour
         {
             var player = _playerManager.GetPlayer();
             return new Player(
-                player.GetComponent<PlayerController>(),
+                player,
                 player.GetComponent<ICollisionHandler>(),
                 player.GetComponent<IInvincibility>()
             );

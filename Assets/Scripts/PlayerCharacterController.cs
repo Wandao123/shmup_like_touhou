@@ -17,18 +17,18 @@ public class PlayerCharacterController : PlayerController
         set => base.Velocity = value.normalized * (SlowMode ? _lowSpeed : _highSpeed);
     }
 
-    protected override void Awake()
+    public override void ManagedAwake()
     {
-        base.Awake();
+        base.ManagedAwake();
         float width = GetComponent<SpriteRenderer>().bounds.size.x;
         float height = GetComponent<SpriteRenderer>().bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) + (new Vector3(width, height, 0) * 0.5f);
         ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) - (new Vector3(width, height, 0) * 0.5f);
     }
 
-    protected override void FixedUpdate()
+    public override void ManagedFixedUpdate()
     {
-        base.FixedUpdate();
+        base.ManagedFixedUpdate();
 
         // 移動制限。画面外に出ないように、Moverで代入した速度を上書きする（三角関数の計算でずれるという理由もある）。この制限は速度を変化させた場合のみに適用され、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
         if (this.Velocity == Vector2.zero)
