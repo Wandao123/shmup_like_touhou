@@ -68,8 +68,7 @@ public abstract class SpriteAnimator : MonoBehaviour
         var spritesList = Addressables.LoadAssetAsync<IList<Sprite>>(_reference).WaitForCompletion();  // 不要なものも含めて、画像のスプライトを全て取得。
         spritesList = spritesList
             // HACK: 必要なスクリプトを抽出するもっと良い方法？
-            .Where(sprite => sprite.name.Contains(this.name + "_"))
-            //.Where(sprite => sprite.name.Contains(this.name.Replace("(Clone)", "_")))  // 必要なものだけ抽出。ここの処理のために、アタッチされるオブジェクト名を必要なスプライトのオブジェクト名に含める必要がある。
+            .Where(sprite => sprite.name.Contains(this.name.Replace("(Clone)", "_")))  // 必要なものだけ抽出。ここの処理のために、アタッチされるオブジェクト名を必要なスプライトのオブジェクト名に含める必要がある。
             .OrderBy(sprite => int.Parse(Regex.Replace(sprite.name, @"[^0-9]", "")))  // スプライトがバラバラの順番でに読み込まれる可能性があるため、並び替える。
             .ToList<Sprite>();
         return spritesList;

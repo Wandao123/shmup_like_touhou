@@ -36,14 +36,10 @@ public class ScriptDirector : MonoBehaviour
     private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     private Dictionary<CommandID, Func<bool>> _mapping;
-    [SerializeField]
-    private EnemyGenerator _enemyGenerator;
-    [SerializeField]
-    private PlayerGenerator _playerGenerator;
-    [SerializeField]
-    private BulletGenerator _enemyBulletGenerator;
-    [SerializeField]
-    private BulletGenerator _playerBulletGenerator;
+    private EnemyManager _enemyManager;
+    private PlayerManager _playerManager;
+    private BulletManager _enemyBulletManager;
+    private BulletManager _playerBulletManager;
     private Script _script;
     private Player _player = null;
 
@@ -54,6 +50,10 @@ public class ScriptDirector : MonoBehaviour
     {
         _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
         _screenTopRight = Camera.main.ViewportToWorldPoint(Vector2.one);
+        _enemyManager = new EnemyManager();
+        _playerManager = new PlayerManager();
+        _enemyBulletManager = new BulletManager();
+        _playerBulletManager = new BulletManager();
             
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
@@ -80,12 +80,9 @@ public class ScriptDirector : MonoBehaviour
 
     void Start()
     {
-        //_playerSize = _playerGenerator.GetComponent<PlayerGenerator>().CharacterSize;
-        var playerObject = GameObject.Find("Reimu");
-        _playerSize = Vector2Int.RoundToInt(playerObject.GetComponent<SpriteRenderer>().sprite.bounds.size);
-        _player = new Player(playerObject.GetComponent<PlayerController>(), playerObject.GetComponent<ICollisionHandler>(), playerObject.GetComponent<IInvincibility>());
+        _playerSize = _playerManager.CharacterSize;
         StartCoroutine(playerScript());
-        //StartCoroutine(stageScript());
+        StartCoroutine(stageScript());
 
         registerConstants();
         //_script.DoFile("Assets/lua_scripts/main.lua");
@@ -140,7 +137,7 @@ public class ScriptDirector : MonoBehaviour
         /*Func<BulletID, float, float, float, float, IBullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _enemyBulletGenerator.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _enemyBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return newObject;
         };
@@ -149,7 +146,7 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, IBullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _playerBulletGenerator.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _playerBulletManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return newObject;
         };
@@ -158,7 +155,7 @@ public class ScriptDirector : MonoBehaviour
         Func<EnemyID, float, float, float, float, int, IEnemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
         {
-            var newObject = _enemyGenerator.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _enemyManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned(speed, angle, hitPoint);
             return newObject;
         };
@@ -167,13 +164,13 @@ public class ScriptDirector : MonoBehaviour
         Func<PlayerID, float, float, IPlayer> generatePlayer =
         (PlayerID id, float posX, float posY) =>
         {
-            var newObject = _playerGenerator.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _playerManager.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned();
             return newObject;
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
-        Func<IPlayer> getPlayer = () => _playerGenerator.GetPlayer();
+        Func<IPlayer> getPlayer = () => _playerManager.GetPlayer();
         _script.Globals["GetPlayer"] = getPlayer;
 
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
@@ -215,7 +212,8 @@ public class ScriptDirector : MonoBehaviour
 
         IEnumerator initialize()
         {
-            //_player = _playerGenerator.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
+            var playerObject = _playerManager.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
+            _player = new Player(playerObject.GetComponent<PlayerController>(), playerObject.GetComponent<ICollisionHandler>(), playerObject.GetComponent<IInvincibility>());
             _player.Spawned();
             _player.TurnInvincible(InvincibleFrames / 2);
             yield break;
@@ -254,8 +252,8 @@ public class ScriptDirector : MonoBehaviour
             {
                 if (_inputActions.Player.Shot.IsPressed())
                 {
-                    //_playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
-                    //_playerBulletGenerator.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
                     //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
@@ -295,9 +293,9 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        /*var smallRedFairy = _enemyGenerator.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        var smallRedFairy = _enemyManager.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
         smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
-        var smallBlueFairy = _enemyGenerator.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
+        var smallBlueFairy = _enemyManager.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
         smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
@@ -305,10 +303,10 @@ public class ScriptDirector : MonoBehaviour
             if (i % 6 == 0)
             {
                 if (smallRedFairy.IsEnabled())
-                    _enemyBulletGenerator.GenerateObject(BulletID.SmallRedBullet, smallRedFairy.Position)
+                    _enemyBulletManager.GenerateObject(BulletID.SmallRedBullet, smallRedFairy.Position)
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x));
                 if (smallBlueFairy.IsEnabled())
-                    _enemyBulletGenerator.GenerateObject(BulletID.SmallBlueBullet, smallBlueFairy.Position)
+                    _enemyBulletManager.GenerateObject(BulletID.SmallBlueBullet, smallBlueFairy.Position)
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x));
             }
             smallRedFairy.Angle += Mathf.Deg2Rad;
@@ -316,7 +314,6 @@ public class ScriptDirector : MonoBehaviour
             yield return null;
         }
         smallRedFairy.Speed = 0.0f;
-        smallBlueFairy.Speed = 0.0f;*/
-        yield return null;
+        smallBlueFairy.Speed = 0.0f;
     }
 }

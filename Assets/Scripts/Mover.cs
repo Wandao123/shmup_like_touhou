@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+//using UnityEngine.Pool;
 
 public interface IController : IActivity, IPhysicalState {}
 
@@ -145,28 +147,40 @@ public abstract class Mover<TController> : IController, ICollisionHandler, IInvi
     }
 }
 
-/// <summary>IMoverを継承したUnityEngine.GameObjectの生成クラス。</summary>
+/// <summary>IActivityを継承したオブジェクトの管理クラス。</summary>
 /// <remarks>
-/// Controllerクラス（プレハブから複製されたGameObjectにアタッチされているもの）を子オブジェクトとして所有する。
+/// IActivityを継承クラス（プレハブから複製されたGameObjectにアタッチされているもの）をリストとして所有する。
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverGenerator<TController, ID> : MonoBehaviour
+public abstract class MoverManager<TController, ID>
     where TController : MoverController
     where ID : Enum
 {
-    private List<TController> pool;
+    //IObjectPool<TContoller> _pool;
+    protected ICollection<IController> _pool;
 
-    /*public IList<TMover> ObjectsList
+    public MoverManager()
+    {
+        /*_pool = new ObjectPool<TContoller>(
+            onCreatePoolObject,
+            onTakeFromPool,
+            onReturnedToPool,
+            onDestroyPoolObject
+        );*/
+        _pool = new List<IController>();
+    }
+
+    public ICollection<TController> ObjectsList
     {
         get {
-            var temp = new List<TMover>();
-            foreach (Transform child in transform)
-                if (child.GetComponent<IActivity>() is var mover && mover.IsEnabled())
-                    temp.Add(mover );
+            var temp = new List<TController>();
+            foreach (IController pooledObject in _pool)
+                if (pooledObject.IsEnabled())
+                    temp.Add(pooledObject as TController);
             return temp;
         }
-    }*/
+    }
 
     /// <summary>未使用のMoverController型のオブジェクトを子オブジェクトから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
     /// <param name="id">複製するプレハブに対応する列挙名</param>
@@ -175,26 +189,102 @@ public abstract class MoverGenerator<TController, ID> : MonoBehaviour
     /// <remarks>
     /// 生成されたGameObjectは描画されず、物理演算も実行されない。返り値に対して「実体化関数」を呼ぶことで、それらが有効化される。
     /// また、ステージを作成する上でGameObject自体をそのまま扱うことは少ないと判断したので、返り値はControllerクラスである。
-    /// GameObject自体を扱いたい場合は、このクラスの子オブジェクトを参照すれば良い。
+    /// GameObject自体を扱いたい場合は、返すクラスのgameObjectフィールドを参照すれば良い。
     /// </remarks>
-    protected Mover<TController> GenerateObject(ID id, Vector2 position, Func<IController, ICollisionHandler, IInvincibility, TController> generator)
+    public TController GenerateObject(ID id, Vector2 position)
     {
-        /*foreach (Transform child in transform)
+        foreach (TController pooledObject in _pool)
             // 変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
-            if (child.name == id.ToString() && child.GetComponent<IController>() is var controller && !controller.IsEnabled())
+            if (pooledObject.name == id.ToString() && !pooledObject.IsEnabled())
             {
                 //child.transform.position = position;  // Rigidbody2d.simulatedがオフになっているため、Transform.positionで変更。
-                controller.Position = position;
-                // TODO: poolから取り出す。
-                return generator(controller, child.GetComponent<ICollisionHandler>(), child.GetComponent<IInvincibility>());
+                pooledObject.Position = position;
+                return pooledObject;
             }
         //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
-        //var newObject = Instantiate(prefab, position, Quaternion.identity) as GameObject;
+        //var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
         //newObject.name = prefab.name;
-        //newObject.transform.parent = this.transform;
-        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, this.transform).WaitForCompletion();
+        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity).WaitForCompletion();
         newObject.name = id.ToString();
-        return generator(newObject.GetComponent<IController>(), newObject.GetComponent<ICollisionHandler>(), newObject.GetComponent<IInvincibility>());*/
-        return null;
+        var controller = newObject.GetComponent<TController>();
+        _pool.Add(controller);
+        return controller;
+    }
+
+    /*private TContoller onCreatePoolObject()
+    {
+        
+    }
+
+    private void onTakeFromPool(TContoller contoller)
+    {
+
+    }
+
+    private void onReturnedToPool(TContoller contoller)
+    {
+
+    }
+
+    private void onDestroyPoolObject(TContoller contoller)
+    {
+
+    }*/
+}
+
+// 参考：https://qiita.com/k_yanase/items/fb64ccfe1c14567a907d
+namespace Serialize {
+    /// <summary>
+    /// テーブルの管理クラス
+    /// </summary>
+    [System.Serializable]
+    public class TableBase<TKey, TValue, Type> where Type : KeyAndValue<TKey, TValue>{
+        [SerializeField]
+        private List<Type> list;
+        private Dictionary<TKey, TValue> table;
+
+
+        public Dictionary<TKey, TValue> GetTable () {
+            if (table is null) {
+                table = ConvertListToDictionary(list);
+            }
+            return table;
+        }
+
+        /// <summary>
+        /// Editor Only
+        /// </summary>
+        public List<Type> GetList () {
+            return list;
+        }
+
+        static Dictionary<TKey, TValue> ConvertListToDictionary (List<Type> list) {
+            Dictionary<TKey, TValue> dic = new Dictionary<TKey, TValue> ();
+            foreach(KeyAndValue<TKey, TValue> pair in list){
+                dic.Add(pair.Key, pair.Value);
+            }
+            return dic;
+        }
+    }
+
+    /// <summary>
+    /// シリアル化できる、KeyValuePair
+    /// </summary>
+    [System.Serializable]
+    public class KeyAndValue<TKey, TValue>
+    {
+        public TKey Key;
+        public TValue Value;
+
+        public KeyAndValue(TKey key, TValue value)
+        {
+            Key = key;
+            Value = value;
+        }
+        public KeyAndValue(KeyValuePair<TKey, TValue> pair)
+        {
+            Key = pair.Key;
+            Value = pair.Value;
+        }
     }
 }

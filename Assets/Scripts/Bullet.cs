@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using MoonSharp.Interpreter;
 
@@ -8,6 +8,27 @@ public interface IBulletActivity: IActivity
 {
     void Shot(float speed, float angle);
 }
+
+public enum BulletID
+{
+    // 敵弾。
+    LargeRedBullet,
+    LargeBlueBullet,
+    MiddleRedBullet,
+    MiddleBlueBullet,
+    SmallRedBullet,
+    SmallBlueBullet,
+    TinyRedBullet,
+    TinyBlueBullet,
+    ScaleRedBullet,
+    ScaleBlueBullet,
+    RiceRedBullet,
+    RiceBlueBullet,
+    // 自弾。
+    ReimuNormalBullet,
+    MarisaNormalBullet,
+    SanaeNormalBullet
+};
 
 public abstract class BulletController : MoverController, IBulletActivity
 {
@@ -57,4 +78,34 @@ public class Bullet : Mover<BulletController>, IBulletActivity
     {}
 
     public void Shot(float speed, float angle) => _controller.Shot(speed, angle);
+}
+
+[System.Serializable]
+public class PreloadedBullets : Serialize.TableBase<BulletID, uint, PreloadedBulletsPair> {}
+
+[System.Serializable]
+public class PreloadedBulletsPair : Serialize.KeyAndValue<BulletID, uint>
+{
+    public PreloadedBulletsPair(BulletID id, uint count) : base(id, count) {}
+}
+
+public class BulletManager : MoverManager<BulletController, BulletID>
+{
+    [SerializeField]
+    private PreloadedBullets _preloadedObjects;
+
+    public BulletManager()
+    {
+        // 予めオブジェクトを生成しておく場合はここに記述。
+        var bulletsList = new List<IBulletActivity>();
+        //foreach (BulletID id in System.Enum.GetValues(typeof(BulletID)))
+        /*foreach (var pair in _preloadedObjects.GetTable())
+            for (var i = 1; i <= pair.Value; i++)
+            {
+                var bullet = GenerateObject(pair.Key, new Vector2(0, 300));
+                bullet.Shot(0.0f, 0.0f);
+                bulletsList.Add(bullet);
+            }
+        bulletsList.Select(bullet => { bullet.Erase(); return bullet; });*/
+    }
 }

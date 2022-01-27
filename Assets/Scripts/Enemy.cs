@@ -8,6 +8,12 @@ public interface IEnemyActivity: IActivity
     void Spawned(float speed, float angle, int hitPoint);
 }
 
+public enum EnemyID
+{
+    SmallRedFairy,
+    SmallBlueFairy
+};
+
 public abstract class EnemyController : MoverController, IEnemyActivity
 {
     public void Spawned(float speed, float angle, int hitPoint)  // 実体化関数
@@ -28,4 +34,12 @@ public class Enemy : Mover<EnemyController>, IEnemyActivity
     {}
 
     public void Spawned(float speed, float angle, int hitPoint) => _controller.Spawned(speed, angle, hitPoint);
+}
+
+public class EnemyManager : MoverManager<EnemyController, EnemyID>
+{
+    public EnemyManager()
+    {
+        // 予めオブジェクトを生成しておく場合はここに記述。
+    }
 }

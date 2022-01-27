@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using MoonSharp.Interpreter;
 
 public interface IPlayerActivity : IActivity
@@ -12,6 +14,18 @@ public interface IPlayerPhysicalState : IPhysicalState
 {
     bool SlowMode { get; set; }
     Vector2 Velocity { get; set; }  // 単位：ドット毎フレーム
+}
+
+public enum PlayerID
+{
+    // 自機。
+    Reimu,
+    Marisa,
+    Sanae,
+    // オプション。
+    ReimuOption,
+    MarisaOption,
+    SanaeOption
 }
 
 public abstract class PlayerController : MoverController, IPlayerActivity, IPlayerPhysicalState
@@ -68,4 +82,27 @@ public class Player : Mover<PlayerController>, IPlayerActivity, IPlayerPhysicalS
 
     public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
     public void Spawned() => _controller.Spawned();
+}
+
+public class PlayerManager : MoverManager<PlayerController, PlayerID>
+{
+    private readonly Vector2Int _characterSize;  // 本来はreadonlyにしたいところだが、MonoBehaviourを継承したクラスではコンストラクタが呼べないため、工夫が必要。
+
+    public Vector2Int CharacterSize { get => _characterSize; }
+
+    public PlayerManager()
+    {
+        var prefab = Addressables.LoadAssetAsync<GameObject>(((PlayerID)0).ToString()).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
+        Vector2 size = prefab.GetComponent<SpriteRenderer>().bounds.size;
+        _characterSize = Vector2Int.RoundToInt(size);
+        if (size - _characterSize != Vector2.zero)
+            Debug.LogWarning("The width or the height of the sprite are not integer numbers: " + size.ToString());
+
+        // 予めオブジェクトを生成しておく場合はここに記述。
+    }
+
+    public PlayerCharacterController GetPlayer()
+    {
+        return _pool.Where(controller => controller is PlayerCharacterController).FirstOrDefault() as PlayerCharacterController;
+    }
 }
