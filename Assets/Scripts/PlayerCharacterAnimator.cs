@@ -8,7 +8,7 @@ public class PlayerCharacterAnimator : SpriteAnimator
     private Sprite[,] _clips;
     private Func<int, Sprite> _clipFramImageFunc;
     private IInvincibility _invincibility;
-    private IPhysicalState _physicalState;
+    private IPlayerPhysicalState _physicalState;
 
     protected override void Awake()
     {
@@ -20,7 +20,7 @@ public class PlayerCharacterAnimator : SpriteAnimator
                 _clips[i, j] = spritesList[_clips.GetLength(1) * i + j];
         _clipFramImageFunc = clipFromImageClosure();
         _invincibility = GetComponent<IInvincibility>();
-        _physicalState = GetComponent<IPhysicalState>();
+        _physicalState = GetComponent<IPlayerPhysicalState>();
     }
 
     protected override void Update()

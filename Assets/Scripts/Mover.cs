@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 public interface IController : IActivity, IPhysicalState {}
 
@@ -15,25 +14,11 @@ public abstract class MoverController : MonoBehaviour, IController
     protected Rigidbody2D _rigid2D;
     private const float MovingThreshold = 80 * 80;  // Rigidbody2D.MovePositionを使うか否かの基準。値自体は当てずっぽう。
     private bool _enabled = false;  // パラメータを更新するか否かのフラグ。
-    //private Vector2 _position = Vector2.zero;
     private float _speed = 0.0f;
     private float _angle = 0.5f * Mathf.PI;
-    //private Action move = () => {};  // 位置を変化させるための関数。Rigidbody2D.positionに代入するべきか、Rigidbody2D.MovePositionを呼ぶべきか適宜切り替える。
 
     public Vector2 Position
     {
-        /*get { return _position; }
-        set
-        {
-            //_position = value;
-            if (_rigid2D.simulated)
-                if (value.sqrMagnitude > MovingThreshold)
-                    move = () => { _rigid2D.position = value; };
-                else
-                    move = () => { _rigid2D.MovePosition(value); };
-            else
-                move = () => { transform.position = value; };
-        }*/
         get { return transform.position; }
         set {
             if (_rigid2D.simulated)
@@ -66,19 +51,6 @@ public abstract class MoverController : MonoBehaviour, IController
         }
     }
 
-    public virtual Vector2 Velocity
-    {
-        get { return new Vector2(_speed * Mathf.Cos(_angle), _speed * Mathf.Sin(_angle)); }
-        set
-        {
-            if (_enabled)
-            {
-                _speed = value.magnitude;
-                _angle = Mathf.Atan2(value.y, value.x);
-            }
-        }
-    }
-
     protected virtual void Awake()
     {
         _rigid2D = GetComponent<Rigidbody2D>();
@@ -87,9 +59,7 @@ public abstract class MoverController : MonoBehaviour, IController
 
     protected virtual void FixedUpdate()
     {
-        //move();
-        //_rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
-        _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
     /*// Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
@@ -150,7 +120,6 @@ public abstract class Mover<TController> : IController, ICollisionHandler, IInvi
     public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
     public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
     public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
-    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
     public int Damage { get => _collisionHandler.Damage; }
     public int HitPoint { get => _collisionHandler.HitPoint; }
     public uint InvincibleCount { get => _invincibility.InvincibleCount; }

@@ -8,25 +8,32 @@ public interface IPlayerActivity : IActivity
     void Spawned();
 }
 
-public interface IPlayerPhysicalState : IPhysicalState  // TODO: ここのみにVelocityを書く。
+public interface IPlayerPhysicalState : IPhysicalState
 {
     bool SlowMode { get; set; }
+    Vector2 Velocity { get; set; }  // 単位：ドット毎フレーム
 }
 
-public abstract class PlayerController : MoverController, IPlayerActivity
+public abstract class PlayerController : MoverController, IPlayerActivity, IPlayerPhysicalState
 {
     private Vector2 _velocity = Vector2.zero;  // 入力との関係上、speedとangle（極座標系）のみならず、Cartesian座標系でも所持する。
 
     public bool SlowMode { get; set; } = false;  // 低速移動か否か。
 
-    public override Vector2 Velocity
+    public virtual Vector2 Velocity
     {
         get { return _velocity; }
         set {
             //_velocity = value * Application.targetFrameRate * Time.deltaTime;  // 実時間を考慮する場合。
-			_velocity = value;
-			base.Velocity = value;
+            _velocity = value;
+            this.Speed = value.magnitude;
+            this.Angle = Mathf.Atan2(value.y, value.x);
         }
+    }
+
+    protected override void FixedUpdate()
+    {
+        _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
     /*// Luaに渡すために、インターフェイスで指定したメソッド以外も定義する。
@@ -42,7 +49,7 @@ public abstract class PlayerController : MoverController, IPlayerActivity
         spawned();
         this.Velocity = Vector2.zero;
         this.Angle = 0.5f * Mathf.PI;
-        var spriteRenderer = GetComponent<SpriteRenderer>();
+        var spriteRenderer = GetComponent<SpriteRenderer>();  // 単なる無敵状態と区別するために、復活の際には半透明にする。
         var color = spriteRenderer.color;
         color.a = 0.75f;
         spriteRenderer.color = color;
@@ -59,5 +66,6 @@ public class Player : Mover<PlayerController>, IPlayerActivity, IPlayerPhysicalS
 
     public bool SlowMode { get => _controller.SlowMode; set => _controller.SlowMode = value; }
 
+    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
     public void Spawned() => _controller.Spawned();
 }
