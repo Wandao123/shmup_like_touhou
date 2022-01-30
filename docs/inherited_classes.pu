@@ -1,0 +1,97 @@
+@startuml CollisionHandler
+abstract CollisionHandler {
+    #{abstract} OnTriggerEnter2D(other)
+}
+
+class BulletCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class EnemyCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class PlayerCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+CollisionHandler <|-- BulletCollisionHandler
+CollisionHandler <|-- EnemyCollisionHandler
+CollisionHandler <|-- PlayerCollisionHandler
+@enduml
+
+@startuml SpriteAnimator
+abstract SpriteAnimator {
+    -spriteRenderer
+    #{abstract} clipFromImage(countedFrames: int)
+    #Update()
+}
+
+class BulletAnimator {
+    -clip: Sprite
+    #clipFromImage(countedFrames: int)
+}
+
+class NormalEnemyAnimator {
+    -clips: Sprite[]
+    #clipFromImage(countedFrames: int)
+}
+
+class BossEnemyAnimator {
+    -clips: Sprite[]
+    #clipFromImage(countedFrames: int)
+}
+
+class PlayerCharacterAnimator {
+    -clips: Sprite[,]
+    #clipFromImage(countedFrames: int)
+}
+
+class PlayerOptionAnimator {
+    -clip: Sprite
+    #clipFromImage(countedFrames: int)
+}
+
+SpriteAnimator <|-- BulletAnimator
+SpriteAnimator <|-- NormalEnemyAnimator
+SpriteAnimator <|-- BossEnemyAnimator
+SpriteAnimator <|-- PlayerCharacterAnimator
+SpriteAnimator <|-- PlayerOptionAnimator
+@enduml
+
+@startuml Controller
+class PlayerCharacterController {
+    #FixedUpdate()
+}
+
+class PlayerOptionController {
+    #FixedUpdate()
+}
+
+PlayerOptionController --|> PlayerController
+PlayerCharacterController --|> PlayerController
+
+class BulletController {
+    #FixedUpdate()
+}
+
+class EnemyController {
+    #FixedUpdate()
+}
+
+class PlayerController {
+    #FixedUpdate()
+}
+
+MoverController <|-- BulletController
+MoverController <|-- EnemyController
+PlayerController --|> MoverController
+
+interface IPlayerPhysicalState {
+    +SlowMode: bool
+    +GetVelocity(velocity: Vector2)
+    +SetVelocity(): Vector2
+}
+
+IPlayerPhysicalState <|.. PlayerController
+@enduml

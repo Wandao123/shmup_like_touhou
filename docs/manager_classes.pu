@@ -1,0 +1,111 @@
+@startuml classes
+interface IActivity {
+    +Erase()
+    +IsEnabled(): bool
+}
+
+interface IBulletActivity {
+    +Shot(speed: float; angle: float)
+}
+
+interface IEnemyActivity {
+    +Spawned(speed: float; angle: float; hitPoint: int)
+}
+
+interface IPlayerActivity {
+    +Spawned()
+}
+
+IActivity <|-- IBulletActivity
+IActivity <|-- IEnemyActivity
+IActivity <|-- IPlayerActivity
+
+abstract MoverManager {
+    -pool: List<Mover>
+    +GenerateObject(id: ObjectID): Mover
+}
+note bottom of MoverManager
+    Generics
+end note
+
+enum BulletID
+class BulletManager
+class Bullet
+
+BulletManager ..> BulletID
+BulletManager --|> MoverManager
+Bullet "0..*" --o "1" BulletManager
+IBulletActivity <|.. Bullet
+Bullet "1" o-- BulletID
+
+enum EnemyID
+class EnemyManager
+class Enemy
+
+EnemyManager ..> EnemyID
+EnemyManager --|> MoverManager
+Enemy "0..*" --o "1" EnemyManager
+IEnemyActivity <|.. Enemy
+Enemy "1" o-- EnemyID
+
+interface IPlayerPhysicalState {
+    +SlowMode: bool
+    +GetVelocity(velocity: Vector2)
+    +SetVelocity(): Vector2
+}
+
+IPhysicalState <|-- IPlayerPhysicalState
+
+enum PlayerID
+
+class PlayerManager {
+    +GetPlayer(): Player
+}
+
+class Player
+
+PlayerManager ..> PlayerID
+PlayerManager --|> MoverManager
+Player "0..*" --o "1" PlayerManager
+IPlayerActivity <|.. Player
+IPlayerPhysicalState <|.. Player
+Player "1" o-- PlayerID
+
+interface ICollisionHandler {
+    -damage: int
+    -hitPoint: int
+    +GetDamage(): int
+    +GetHitPoint(): int
+}
+
+interface IInvincibility {
+    +GetInvincibleCount()
+    +IsInvincible(): bool
+    +TurnInvincible(frames: uint)
+}
+
+interface IPhysicalState {
+    -angle: float
+    -speed: float
+    -rigidBody2D
+    +GetPosition(): Vector2
+    +SetPosition(position: Vector2)
+    +GetAngle(): float
+    +SetAngle(angle: float)
+    +GetSpeed(): float
+    +SetSpeed(speed: float)
+}
+
+abstract Mover
+note bottom of Mover
+    Wrapper class
+end note
+
+IActivity <|.. Mover
+ICollisionHandler <|.. Mover
+IInvincibility <|.. Mover
+IPhysicalState <|.. Mover
+Mover <|-- Bullet
+Mover <|-- Enemy
+Mover <|-- Player
+@enduml

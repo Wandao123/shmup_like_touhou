@@ -15,7 +15,7 @@ interface IManagedBehaviour
 
 public class Activity : MonoBehaviour, IActivity
 {
-    private bool _enabled = false;  // ƒpƒ‰ƒ[ƒ^‚ğXV‚·‚é‚©”Û‚©‚Ìƒtƒ‰ƒOB
+    private bool _enabled = false;  // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ›´æ–°ã™ã‚‹ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°ã€‚
 
     public void Erase()
     {

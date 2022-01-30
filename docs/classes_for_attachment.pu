@@ -1,0 +1,87 @@
+@startuml classes
+abstract MonoBehaviour
+note left of MonoBehaviour
+    From Unity
+end note
+
+interface IActivity {
+    +Erase()
+    +IsEnabled(): bool
+}
+
+class Activity {
+    +Spawned()
+}
+
+MonoBehaviour <|-- Activity
+Activity ..|> IActivity
+
+interface IPhysicalState {
+    -angle: float
+    -speed: float
+    -rigidBody2D
+    +GetPosition(): Vector2
+    +SetPosition(position: Vector2)
+    +GetAngle(): float
+    +SetAngle(angle: float)
+    +GetSpeed(): float
+    +SetSpeed(speed: float)
+}
+
+class AutoDisabling {
+    -existingCounter: uint
+    -isInside(): bool
+    -FixedUpdate()
+    -OnEnable()
+}
+
+MonoBehaviour <|-- AutoDisabling
+AutoDisabling "1" o-- IActivity
+AutoDisabling "1" o-- IPhysicalState
+
+interface IInvincibility {
+    +GetInvincibleCount()
+    +IsInvincible(): bool
+    +TurnInvincible(frames: uint)
+}
+
+class Invincibility {
+    -invincibleCounter: int
+    -FixedUpdate()
+}
+
+IInvincibility <|.. Invincibility
+Invincibility --|> MonoBehaviour
+
+interface ICollisionHandler {
+    -damage: int
+    -hitPoint: int
+    +GetDamage(): int
+    +GetHitPoint(): int
+}
+
+abstract CollisionHandler {
+    #{abstract} OnTriggerEnter2D(other)
+}
+
+MonoBehaviour <|-- CollisionHandler
+CollisionHandler ..|> ICollisionHandler
+CollisionHandler "1" o-- IActivity
+
+abstract MoverController {
+    #{abstract} FixedUpdate()
+}
+
+MoverController --|> MonoBehaviour
+MoverController ..|> IPhysicalState
+MoverController <.. Activity
+
+abstract SpriteAnimator {
+    -spriteRenderer
+    #{abstract} clipFromImage(countedFrames: int)
+    #Update()
+}
+
+SpriteAnimator --|> MonoBehaviour
+SpriteAnimator <.. Activity
+@enduml
