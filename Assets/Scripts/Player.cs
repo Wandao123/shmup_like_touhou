@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using MoonSharp.Interpreter;
 
 public interface IPlayerActivity : IActivity
 {
@@ -40,7 +39,6 @@ public abstract class PlayerController : MoverController, IPlayerPhysicalState
 }
 
 // Luaのためのラッパークラス。
-[MoonSharpUserData]
 public class Player : Mover<PlayerController, PlayerID>, IInvincibility, IPlayerActivity, IPlayerPhysicalState
 {
     private IInvincibility _invincibility;

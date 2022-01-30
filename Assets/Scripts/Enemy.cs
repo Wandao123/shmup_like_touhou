@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MoonSharp.Interpreter;
 
 public interface IEnemyActivity: IActivity
 {
@@ -11,7 +10,6 @@ public interface IEnemyActivity: IActivity
 public abstract class EnemyController : MoverController {}
 
 // Luaのためのラッパークラス。
-[MoonSharpUserData]
 public class Enemy : Mover<EnemyController, EnemyID>, IInvincibility, IEnemyActivity
 {
     private IInvincibility _invincibility;

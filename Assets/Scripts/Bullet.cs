@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using MoonSharp.Interpreter;
 
 public interface IBulletActivity: IActivity
 {
@@ -31,7 +30,6 @@ public abstract class BulletController : MoverController
 }
 
 // Luaのためのラッパークラス。
-[MoonSharpUserData]
 public class Bullet : Mover<BulletController, BulletID>, IBulletActivity
 {
     public Bullet(GameObject go, BulletID id)
