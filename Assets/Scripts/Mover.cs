@@ -98,16 +98,11 @@ public abstract class Mover<TController> : IActivity, IPhysicalState, ICollision
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverManager<TController, ID> : IManagedBehaviour
+public abstract class MoverManager<TController, ID> : MonoBehaviour, IManagedBehaviour
     where TController : MoverController
     where ID : Enum
 {
-    protected ICollection<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)> _pool;
-
-    public MoverManager()
-    {
-        _pool = new List<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)>();
-    }
+    protected ICollection<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)> _pool = new List<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)>();
 
     public ICollection<GameObject> ObjectsList
     {
@@ -141,10 +136,11 @@ public abstract class MoverManager<TController, ID> : IManagedBehaviour
         // 新しいオブジェクトの生成。
         //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
         //var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
+        //prefab.transform.parent = transform;
         //newObject.name = prefab.name;
-        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity).WaitForCompletion();
+        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, transform).WaitForCompletion();
         newObject.name = id.ToString();
-        Func<bool> isEnabled = newObject.GetComponent<Activity>().IsEnabled;
+        Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
         Action fixedUpdate = default;
         foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
             fixedUpdate += behaviour.ManagedFixedUpdate;
@@ -173,7 +169,6 @@ namespace Serialize {
         [SerializeField]
         private List<Type> list;
         private Dictionary<TKey, TValue> table;
-
 
         public Dictionary<TKey, TValue> GetTable () {
             if (table is null) {

@@ -36,9 +36,13 @@ public class ScriptDirector : MonoBehaviour
     private Vector2Int _playerSize;
     private ShmupInputActions _inputActions;
     private Dictionary<CommandID, Func<bool>> _mapping;
+    [SerializeField]
     private EnemyManager _enemyManager;
+    [SerializeField]
     private PlayerManager _playerManager;
+    [SerializeField]
     private BulletManager _enemyBulletManager;
+    [SerializeField]
     private BulletManager _playerBulletManager;
     private Script _script;
     private Player _player;
@@ -50,11 +54,7 @@ public class ScriptDirector : MonoBehaviour
     {
         _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
         _screenTopRight = Camera.main.ViewportToWorldPoint(Vector2.one);
-        _enemyManager = new EnemyManager();
-        _playerManager = new PlayerManager();
-        _enemyBulletManager = new BulletManager();
-        _playerBulletManager = new BulletManager();
-            
+
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
         _mapping = new Dictionary<CommandID, Func<bool>>() {

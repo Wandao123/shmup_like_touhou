@@ -8,12 +8,6 @@ public interface IEnemyActivity: IActivity
     void Spawned(float speed, float angle, int hitPoint);
 }
 
-public enum EnemyID
-{
-    SmallRedFairy,
-    SmallBlueFairy
-};
-
 public abstract class EnemyController : MoverController {}
 
 // Luaのためのラッパークラス。
@@ -39,13 +33,5 @@ public class Enemy : Mover<EnemyController>, IInvincibility, IEnemyActivity
         this.Speed = speed;
         this.Angle = angle;
         _collisionHandler.HitPoint = hitPoint;
-    }
-}
-
-public class EnemyManager : MoverManager<EnemyController, EnemyID>
-{
-    public EnemyManager()
-    {
-        // 予めオブジェクトを生成しておく場合はここに記述。
     }
 }
