@@ -6,17 +6,14 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 //using UnityEngine.Pool;
 
-public interface IController : IActivity, IPhysicalState {}
-
 /// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
 /// <remarks>
 /// デフォルトでenabledにfalseを設定するため、生成しただけでは更新されない。継承先で「実体化関数」を定義する必要がある。名前を別にしたのは、各クラスで渡すべき引数が異なるため。
 /// </remarks>
-public abstract class MoverController : MonoBehaviour, IController
+public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysicalState
 {
     protected Rigidbody2D _rigid2D;
     private const float MovingThreshold = 80 * 80;  // Rigidbody2D.MovePositionを使うか否かの基準。値自体は当てずっぽう。
-    private bool _enabled = false;  // パラメータを更新するか否かのフラグ。
     private float _speed = 0.0f;
     private float _angle = 0.5f * Mathf.PI;
 
@@ -37,27 +34,15 @@ public abstract class MoverController : MonoBehaviour, IController
     public float Speed
     {
         get { return _speed; }
-        set
-        {
-            if (_enabled)
-                _speed = value;
-        }
+        set { _speed = value; }
     }
 
     public virtual float Angle
     {
         get { return _angle; }
-        set
-        {
-            if (_enabled)
-                _angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
+        set {
+            _angle = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
         }
-    }
-
-    public virtual void ManagedAwake()
-    {
-        _rigid2D = GetComponent<Rigidbody2D>();
-        _rigid2D.simulated = false;
     }
 
     public virtual void ManagedFixedUpdate()
@@ -65,24 +50,46 @@ public abstract class MoverController : MonoBehaviour, IController
         _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
-    public virtual void Erase()
+    protected virtual void Awake()
     {
-        GetComponent<SpriteAnimator>().enabled = false;
+        _rigid2D = GetComponent<Rigidbody2D>();
         _rigid2D.simulated = false;
-        _enabled = false;
     }
 
-    public bool IsEnabled()
+    protected virtual void OnDisable()
     {
-        return _enabled;
+        _rigid2D.simulated = false;
     }
 
-    protected void spawned()
+    protected virtual void OnEnable()
     {
-        GetComponent<SpriteAnimator>().enabled = true;
         _rigid2D.simulated = true;
-        _enabled = true;
     }
+}
+
+// Luaのためのラッパークラス。
+public abstract class Mover<TController> : IActivity, IPhysicalState, ICollisionHandler
+    where TController : MoverController
+{
+    protected Activity _activity;
+    protected TController _controller;
+    protected ICollisionHandler _collisionHandler;
+
+    public Mover(GameObject gameObject)
+    {
+        _activity = gameObject.GetComponent<Activity>();
+        _controller = gameObject.GetComponent<TController>();
+        _collisionHandler = gameObject.GetComponent<ICollisionHandler>();
+    }
+
+    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
+    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
+    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
+    public int Damage { get => _collisionHandler.Damage; }
+    public int HitPoint { get => _collisionHandler.HitPoint; set => _collisionHandler.HitPoint = value; }
+
+    public void Erase() => _activity.Erase();
+    public bool IsEnabled() => _activity.IsEnabled();
 }
 
 /// <summary>IActivityを継承したオブジェクトの管理クラス。</summary>
@@ -91,92 +98,69 @@ public abstract class MoverController : MonoBehaviour, IController
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverManager<TController, ID>
+public abstract class MoverManager<TController, ID> : IManagedBehaviour
     where TController : MoverController
     where ID : Enum
 {
-    //IObjectPool<TContoller> _pool;
-    protected ICollection<TController> _pool;
+    protected ICollection<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)> _pool;
 
     public MoverManager()
     {
-        /*_pool = new ObjectPool<TContoller>(
-            onCreatePoolObject,
-            onTakeFromPool,
-            onReturnedToPool,
-            onDestroyPoolObject
-        );*/
-        _pool = new List<TController>();
+        _pool = new List<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)>();
     }
 
-    public ICollection<TController> ObjectsList
+    public ICollection<GameObject> ObjectsList
     {
         get {
-            var temp = new List<TController>();
-            foreach (IController pooledObject in _pool)
-                if (pooledObject.IsEnabled())
-                    temp.Add(pooledObject as TController);
-            return temp;
+            return _pool
+                .Where(pooledObject => pooledObject.isEnabled())
+                .Select(pooledObject => pooledObject.gameObject)
+                .ToList();
         }
     }
 
-    /// <summary>未使用のMoverController型のオブジェクトを子オブジェクトから探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
+    /// <summary>未使用のGameObjectを探索して、見つかればそれを返す。見つからなければ新しく生成する。</summary>
     /// <param name="id">複製するプレハブに対応する列挙名</param>
     /// <param name="position">生成する位置</param>
     /// <returns>生成されたGameObjectにアタッチされているControllerクラス</returns>
     /// <remarks>
     /// 生成されたGameObjectは描画されず、物理演算も実行されない。返り値に対して「実体化関数」を呼ぶことで、それらが有効化される。
-    /// また、ステージを作成する上でGameObject自体をそのまま扱うことは少ないと判断したので、返り値はControllerクラスである。
-    /// GameObject自体を扱いたい場合は、返すクラスのgameObjectフィールドを参照すれば良い。
     /// </remarks>
-    public TController GenerateObject(ID id, Vector2 position)
+    public GameObject GenerateObject(ID id, Vector2 position)
     {
-        foreach (TController pooledObject in _pool)
-            // 変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
-            if (pooledObject.name == id.ToString() && !pooledObject.IsEnabled())
-            {
-                pooledObject.Position = position;
-                return pooledObject;
-            }
+        // 未使用のものを検索。変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
+        if (_pool
+            .FirstOrDefault(pooledObject => pooledObject.gameObject.name == id.ToString() && !pooledObject.isEnabled())
+            is var first
+            && first != default((GameObject gameObject, Func<bool> isEnabled, Action managedUpdate)))
+        {
+            first.gameObject.GetComponent<IPhysicalState>().Position = position;
+            return first.gameObject;
+        }
+
+        // 新しいオブジェクトの生成。
         //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
         //var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
         //newObject.name = prefab.name;
         var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity).WaitForCompletion();
         newObject.name = id.ToString();
-        var controller = newObject.GetComponent<TController>();
-        controller.ManagedAwake();
-        _pool.Add(controller);
-        return controller;
+        Func<bool> isEnabled = newObject.GetComponent<Activity>().IsEnabled;
+        Action fixedUpdate = default;
+        foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
+            fixedUpdate += behaviour.ManagedFixedUpdate;
+        _pool.Add((newObject, isEnabled, fixedUpdate));
+        return newObject;
     }
 
     public void ManagedFixedUpdate()
     {
+        // LINQを使うと遅くなる。
         //_pool.Where(pooledObject => pooledObject.IsEnabled())
         //    .Select(pooledObject => { pooledObject.ManagedFixedUpdate(); return pooledObject; });
-        foreach (TController pooledObject in _pool)
-            if (pooledObject.IsEnabled())
-                pooledObject.ManagedFixedUpdate();
+        foreach (var pooledObject in _pool)
+            if (pooledObject.isEnabled())
+                pooledObject.fixedUpdate();
     }
-
-    /*private TContoller onCreatePoolObject()
-    {
-        
-    }
-
-    private void onTakeFromPool(TContoller contoller)
-    {
-
-    }
-
-    private void onReturnedToPool(TContoller contoller)
-    {
-
-    }
-
-    private void onDestroyPoolObject(TContoller contoller)
-    {
-
-    }*/
 }
 
 // 参考：https://qiita.com/k_yanase/items/fb64ccfe1c14567a907d

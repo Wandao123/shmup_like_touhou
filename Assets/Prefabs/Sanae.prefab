@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 6675325715215138516}
   - component: {fileID: 1384380170614115608}
   - component: {fileID: 4300910955736240740}
+  - component: {fileID: 4742233524731929622}
   m_Layer: 10
   m_Name: Sanae
   m_TagString: Untagged
@@ -178,5 +179,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca6fc3e23244905419ee9044955196f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4742233524731929622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71754497bede6bf48ba68e68daf58591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

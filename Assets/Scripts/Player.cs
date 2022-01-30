@@ -28,7 +28,7 @@ public enum PlayerID
     SanaeOption
 }
 
-public abstract class PlayerController : MoverController, IPlayerActivity, IPlayerPhysicalState
+public abstract class PlayerController : MoverController, IPlayerPhysicalState
 {
     private Vector2 _velocity = Vector2.zero;  // 入力との関係上、speedとangle（極座標系）のみならず、Cartesian座標系でも所持する。
 
@@ -49,50 +49,39 @@ public abstract class PlayerController : MoverController, IPlayerActivity, IPlay
     {
         _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
-
-    public void Spawned()  // 実体化関数
-    {
-        if (GetComponent<CollisionHandler>().HitPoint <= 0)
-            return;
-        spawned();
-        this.Velocity = Vector2.zero;
-        this.Angle = 0.5f * Mathf.PI;
-        var spriteRenderer = GetComponent<SpriteRenderer>();  // 単なる無敵状態と区別するために、復活の際には半透明にする。
-        var color = spriteRenderer.color;
-        color.a = 0.75f;
-        spriteRenderer.color = color;
-    }
 }
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public struct Player : IPlayerActivity, IPlayerPhysicalState, ICollisionHandler, IInvincibility
+public class Player : Mover<PlayerController>, IInvincibility, IPlayerActivity, IPlayerPhysicalState
 {
-    private PlayerController _controller;
-    private ICollisionHandler _collisionHandler;
     private IInvincibility _invincibility;
 
-    public Player(PlayerController controller, ICollisionHandler collisionHandler, IInvincibility invincibility)
+    public Player(GameObject gameObject)
+        : base(gameObject)
     {
-        _controller = controller;
-        _collisionHandler = collisionHandler;
-        _invincibility = invincibility;
+        _invincibility = gameObject.GetComponent<IInvincibility>();
     }
 
-    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
-    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
-    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
-    public int Damage { get => _collisionHandler.Damage; }
-    public int HitPoint { get => _collisionHandler.HitPoint; }
     public uint InvincibleCount { get => _invincibility.InvincibleCount; }
     public bool SlowMode { get => _controller.SlowMode; set => _controller.SlowMode = value; }
+    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
 
-    public void Erase() => _controller.Erase();
-    public bool IsEnabled() => _controller.IsEnabled();
     public bool IsInvincible() => _invincibility.IsInvincible();
     public void TurnInvincible(uint frames) => _invincibility.TurnInvincible(frames);
-    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
-    public void Spawned() => _controller.Spawned();
+
+    public void Spawned()  // 実体化関数
+    {
+        if (_collisionHandler.HitPoint <= 0)
+            return;
+        _activity.Spawned();
+        this.Velocity = Vector2.zero;
+        this.Angle = 0.5f * Mathf.PI;
+        var spriteRenderer = _controller.GetComponent<SpriteRenderer>();  // 単なる無敵状態と区別するために、復活の際には半透明にする。
+        var color = spriteRenderer.color;
+        color.a = 0.75f;
+        spriteRenderer.color = color;
+    }
 }
 
 public class PlayerManager : MoverManager<PlayerController, PlayerID>
@@ -112,8 +101,8 @@ public class PlayerManager : MoverManager<PlayerController, PlayerID>
         // 予めオブジェクトを生成しておく場合はここに記述。
     }
 
-    public PlayerCharacterController GetPlayer()
+    public GameObject GetPlayer()
     {
-        return _pool.Where(controller => controller is PlayerCharacterController).FirstOrDefault() as PlayerCharacterController;
+        return _pool.FirstOrDefault(pooledObject => pooledObject.gameObject.GetComponent<PlayerCharacterController>() != null).gameObject;
     }
 }

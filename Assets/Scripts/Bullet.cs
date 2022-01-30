@@ -30,7 +30,7 @@ public enum BulletID
     SanaeNormalBullet
 };
 
-public abstract class BulletController : MoverController, IBulletActivity
+public abstract class BulletController : MoverController
 {
     private const float RotatingThreshold = 15 * Mathf.Deg2Rad;  // Rigidbody2D.MoveRotationを使うか否かの基準。値自体は当てずっぽう。
 
@@ -49,38 +49,23 @@ public abstract class BulletController : MoverController, IBulletActivity
                 transform.rotation = Quaternion.Euler(0.0f, 0.0f, (this.Angle - 0.5f * Mathf.PI) * Mathf.Rad2Deg);
         }
     }
-
-    public void Shot(float speed, float angle)  // 実体化関数
-    {
-        spawned();
-        this.Speed = speed;
-        this.Angle = angle;
-        //GetComponent<CollisionHandler>().Initialize(getDamage(), 1);
-    }
 }
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public struct Bullet : IBulletActivity, IPhysicalState, ICollisionHandler
+public class Bullet : Mover<BulletController>, IBulletActivity
 {
-    private BulletController _controller;
-    private ICollisionHandler _collisionHandler;
+    public Bullet(GameObject gameObject)
+        : base(gameObject)
+    {}
 
-    public Bullet(BulletController controller, ICollisionHandler collisionHandler)
+    public void Shot(float speed, float angle)  // 実体化関数
     {
-        _controller = controller;
-        _collisionHandler = collisionHandler;
+        _activity.Spawned();
+        this.Speed = speed;
+        this.Angle = angle;
+        //_collisionHandler.HitPoint = 1;
     }
-
-    public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
-    public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
-    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
-    public int Damage { get => _collisionHandler.Damage; }
-    public int HitPoint { get => _collisionHandler.HitPoint; }
-
-    public void Erase() => _controller.Erase();
-    public bool IsEnabled() => _controller.IsEnabled();
-    public void Shot(float speed, float angle) => _controller.Shot(speed, angle);
 }
 
 [System.Serializable]

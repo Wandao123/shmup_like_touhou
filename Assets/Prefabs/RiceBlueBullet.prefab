@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4577463621920487349}
   - component: {fileID: 9020543670744184176}
   - component: {fileID: 4225019692015578793}
+  - component: {fileID: 8829938903018821757}
   m_Layer: 11
   m_Name: RiceBlueBullet
   m_TagString: Untagged
@@ -176,5 +177,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7781c6de2769edc46b5e8fa4f7968ec1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8829938903018821757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71754497bede6bf48ba68e68daf58591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

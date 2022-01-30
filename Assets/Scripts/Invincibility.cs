@@ -11,13 +11,13 @@ public interface IInvincibility
 }
 
 /// <summary>無敵状態を司るクラス</summary>
-public class Invincibility : MonoBehaviour, IInvincibility
+public class Invincibility : MonoBehaviour, IInvincibility, IManagedBehaviour
 {
     private uint _invincibleCounter = 0;  // 無敵状態になっている残りのフレーム数。
 
     public uint InvincibleCount { get => _invincibleCounter; }
 
-    private void FixedUpdate()
+    public void ManagedFixedUpdate()
     {
         _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
     }

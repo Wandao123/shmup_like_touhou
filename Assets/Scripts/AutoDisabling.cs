@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>画面外にあるために無効にするか否かを判定</summary>
-public class AutoDisabling : MonoBehaviour
+public class AutoDisabling : MonoBehaviour, IManagedBehaviour
 {
     private uint _existingCounter = 0;  // enabledがtrueになってからのフレーム数。
-    private IController _controller;
+    private IActivity _activity;
+    private IPhysicalState _physicalState;
     private Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ拡げた座標。
 
     private void Awake()
     {
-        _controller = GetComponent<IController>();
+        _activity = GetComponent<IActivity>();
+        _physicalState = GetComponent<IPhysicalState>();
         float width = GetComponent<SpriteRenderer>().bounds.size.x;
         float height = GetComponent<SpriteRenderer>().bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) - (new Vector3(width, height, 0) * 0.5f);
         ScreenMaximum = Camera.main.ViewportToWorldPoint(Vector2.one) + (new Vector3(width, height, 0) * 0.5f);
     }
 
-    private void FixedUpdate()
+    public void ManagedFixedUpdate()
     {
         ++_existingCounter;
         if (!isInside())
-            _controller.Erase();
+            _activity.Erase();
     }
 
     private void OnEnable()
@@ -39,8 +41,8 @@ public class AutoDisabling : MonoBehaviour
     {
         if (_existingCounter < 60)
             return true;
-        if (_controller.Position.x < ScreenMinimum.x || _controller.Position.x > ScreenMaximum.x
-                || _controller.Position.y < ScreenMinimum.y || _controller.Position.y > ScreenMaximum.y)
+        if (_physicalState.Position.x < ScreenMinimum.x || _physicalState.Position.x > ScreenMaximum.x
+                || _physicalState.Position.y < ScreenMinimum.y || _physicalState.Position.y > ScreenMaximum.y)
         {
             if (_existingCounter > 66)
                 return false;

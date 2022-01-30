@@ -142,61 +142,43 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, Bullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _enemyBulletManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = new Bullet(_enemyBulletManager.GenerateObject(id, new Vector2(posX, posY)));
             newObject.Shot(speed, angle);
-            return new Bullet(
-                newObject,
-                newObject.GetComponent<ICollisionHandler>()
-            );
+            return newObject;
         };
         _script.Globals["GenerateBullet"] = generateBullet;
 
         Func<BulletID, float, float, float, float, Bullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _playerBulletManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = new Bullet(_playerBulletManager.GenerateObject(id, new Vector2(posX, posY)));
             newObject.Shot(speed, angle);
-            return new Bullet(
-                newObject,
-                newObject.GetComponent<ICollisionHandler>()
-            );
+            return newObject;
         };
         _script.Globals["GeneratePlayerBullet"] = generatePlayerBullet;
 
         Func<EnemyID, float, float, float, float, int, Enemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
         {
-            var newObject = _enemyManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = new Enemy(_enemyManager.GenerateObject(id, new Vector2(posX, posY)));
             newObject.Spawned(speed, angle, hitPoint);
-            return new Enemy(
-                newObject,
-                newObject.GetComponent<ICollisionHandler>(),
-                newObject.GetComponent<IInvincibility>()
-            );
+            return newObject;
         };
         _script.Globals["GenerateEnemy"] = generateEnemy;
 
         Func<PlayerID, float, float, Player> generatePlayer =
         (PlayerID id, float posX, float posY) =>
         {
-            var newObject = _playerManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = new Player(_playerManager.GenerateObject(id, new Vector2(posX, posY)));
             newObject.Spawned();
-            return new Player(
-                newObject,
-                newObject.GetComponent<ICollisionHandler>(),
-                newObject.GetComponent<IInvincibility>()
-            );
+            return newObject;
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
         Func<Player> getPlayer = () =>
         {
-            var player = _playerManager.GetPlayer();
-            return new Player(
-                player,
-                player.GetComponent<ICollisionHandler>(),
-                player.GetComponent<IInvincibility>()
-            );
+            var player = new Player(_playerManager.GetPlayer());
+            return player;
         };
         _script.Globals["GetPlayer"] = getPlayer;
 
@@ -240,7 +222,7 @@ public class ScriptDirector : MonoBehaviour
         IEnumerator initialize()
         {
             var playerObject = _playerManager.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
-            _player = new Player(playerObject.GetComponent<PlayerController>(), playerObject.GetComponent<ICollisionHandler>(), playerObject.GetComponent<IInvincibility>());
+            _player = new Player(playerObject);
             _player.Spawned();
             _player.TurnInvincible(InvincibleFrames / 2);
             yield break;
@@ -279,8 +261,8 @@ public class ScriptDirector : MonoBehaviour
             {
                 if (_inputActions.Player.Shot.IsPressed())
                 {
-                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
-                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    new Bullet(_playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f))).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    new Bullet(_playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f))).Shot(BulletSpeed, 0.5f * Mathf.PI);
                     //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
@@ -320,9 +302,9 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        var smallRedFairy = _enemyManager.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        var smallRedFairy = new Enemy(_enemyManager.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y)));
         smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
-        var smallBlueFairy = _enemyManager.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
+        var smallBlueFairy = new Enemy(_enemyManager.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y)));
         smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
@@ -330,10 +312,10 @@ public class ScriptDirector : MonoBehaviour
             if (i % 6 == 0)
             {
                 if (smallRedFairy.IsEnabled())
-                    _enemyBulletManager.GenerateObject(BulletID.SmallRedBullet, smallRedFairy.Position)
+                    new Bullet(_enemyBulletManager.GenerateObject(BulletID.ScaleRedBullet, smallRedFairy.Position))
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x));
                 if (smallBlueFairy.IsEnabled())
-                    _enemyBulletManager.GenerateObject(BulletID.SmallBlueBullet, smallBlueFairy.Position)
+                    new Bullet(_enemyBulletManager.GenerateObject(BulletID.ScaleBlueBullet, smallBlueFairy.Position))
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x));
             }
             smallRedFairy.Angle += Mathf.Deg2Rad;

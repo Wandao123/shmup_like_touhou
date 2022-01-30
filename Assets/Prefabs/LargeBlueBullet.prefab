@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8580423243677748100}
   - component: {fileID: 3738665684378868008}
   - component: {fileID: 2324001626213760729}
+  - component: {fileID: 1181433140632689872}
   m_Layer: 11
   m_Name: LargeBlueBullet
   m_TagString: Untagged
@@ -176,5 +177,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7781c6de2769edc46b5e8fa4f7968ec1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1181433140632689872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670645704118649646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71754497bede6bf48ba68e68daf58591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

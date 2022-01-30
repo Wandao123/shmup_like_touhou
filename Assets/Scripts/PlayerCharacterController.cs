@@ -17,9 +17,9 @@ public class PlayerCharacterController : PlayerController
         set => base.Velocity = value.normalized * (SlowMode ? _lowSpeed : _highSpeed);
     }
 
-    public override void ManagedAwake()
+    protected override void Awake()
     {
-        base.ManagedAwake();
+        base.Awake();
         float width = GetComponent<SpriteRenderer>().bounds.size.x;
         float height = GetComponent<SpriteRenderer>().bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) + (new Vector3(width, height, 0) * 0.5f);
