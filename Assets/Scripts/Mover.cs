@@ -68,18 +68,21 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
 }
 
 // Luaのためのラッパークラス。
-public abstract class Mover<TController> : IActivity, IPhysicalState, ICollisionHandler
+public abstract class Mover<TController, MoverID> : IActivity, IPhysicalState, ICollisionHandler
     where TController : MoverController
+    where MoverID : Enum
 {
     protected Activity _activity;
     protected TController _controller;
     protected ICollisionHandler _collisionHandler;
+    protected MoverID _id;
 
-    public Mover(GameObject gameObject)
+    public Mover(GameObject go, MoverID id)
     {
-        _activity = gameObject.GetComponent<Activity>();
-        _controller = gameObject.GetComponent<TController>();
-        _collisionHandler = gameObject.GetComponent<ICollisionHandler>();
+        _activity = go.GetComponent<Activity>();
+        _controller = go.GetComponent<TController>();
+        _collisionHandler = go.GetComponent<ICollisionHandler>();
+        _id = id;
     }
 
     public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
@@ -87,6 +90,7 @@ public abstract class Mover<TController> : IActivity, IPhysicalState, ICollision
     public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
     public int Damage { get => _collisionHandler.Damage; }
     public int HitPoint { get => _collisionHandler.HitPoint; set => _collisionHandler.HitPoint = value; }
+    public MoverID ID { get => _id; }
 
     public void Erase() => _activity.Erase();
     public bool IsEnabled() => _activity.IsEnabled();
@@ -98,18 +102,19 @@ public abstract class Mover<TController> : IActivity, IPhysicalState, ICollision
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverManager<TController, ID> : MonoBehaviour, IManagedBehaviour
+public abstract class MoverManager<TMover, TController, MoverID> : MonoBehaviour, IManagedBehaviour
+    where TMover : Mover<TController, MoverID>
     where TController : MoverController
-    where ID : Enum
+    where MoverID : Enum
 {
-    protected ICollection<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)> _pool = new List<(GameObject gameObject, Func<bool> isEnabled, Action fixedUpdate)>();
+    protected ICollection<(TMover mover, Func<bool> isEnabled, Action fixedUpdate)> _pool = new List<(TMover mover, Func<bool> isEnabled, Action fixedUpdate)>();
 
-    public ICollection<GameObject> ObjectsList
+    public ICollection<TMover> ObjectsList
     {
         get {
             return _pool
                 .Where(pooledObject => pooledObject.isEnabled())
-                .Select(pooledObject => pooledObject.gameObject)
+                .Select(pooledObject => pooledObject.mover)
                 .ToList();
         }
     }
@@ -121,16 +126,16 @@ public abstract class MoverManager<TController, ID> : MonoBehaviour, IManagedBeh
     /// <remarks>
     /// 生成されたGameObjectは描画されず、物理演算も実行されない。返り値に対して「実体化関数」を呼ぶことで、それらが有効化される。
     /// </remarks>
-    public GameObject GenerateObject(ID id, Vector2 position)
+    public TMover GenerateObject(MoverID id, Vector2 position)
     {
         // 未使用のものを検索。変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
         if (_pool
-            .FirstOrDefault(pooledObject => pooledObject.gameObject.name == id.ToString() && !pooledObject.isEnabled())
+            .FirstOrDefault(pooledObject => idEquals(pooledObject.mover.ID, id) && !pooledObject.isEnabled())
             is var first
-            && first != default((GameObject gameObject, Func<bool> isEnabled, Action managedUpdate)))
+            && first != default((TMover, Func<bool>, Action)))
         {
-            first.gameObject.GetComponent<IPhysicalState>().Position = position;
-            return first.gameObject;
+            first.mover.Position = position;
+            return first.mover;
         }
 
         // 新しいオブジェクトの生成。
@@ -140,12 +145,13 @@ public abstract class MoverManager<TController, ID> : MonoBehaviour, IManagedBeh
         //newObject.name = prefab.name;
         var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, transform).WaitForCompletion();
         newObject.name = id.ToString();
+        var mover = makeWrapper(newObject, id);
         Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
         Action fixedUpdate = default;
         foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
             fixedUpdate += behaviour.ManagedFixedUpdate;
-        _pool.Add((newObject, isEnabled, fixedUpdate));
-        return newObject;
+        _pool.Add((mover, isEnabled, fixedUpdate));
+        return mover;
     }
 
     public void ManagedFixedUpdate()
@@ -157,6 +163,9 @@ public abstract class MoverManager<TController, ID> : MonoBehaviour, IManagedBeh
             if (pooledObject.isEnabled())
                 pooledObject.fixedUpdate();
     }
+
+    protected abstract TMover makeWrapper(GameObject go, MoverID id);  // new制約を使うと引数が渡せない上に遅くなるので、子クラスで生成用関数を定義。
+    protected abstract bool idEquals(MoverID id1, MoverID id2);  // ジェネリックスの関係で等号が使えないので、子クラスに任せる。
 }
 
 // 参考：https://qiita.com/k_yanase/items/fb64ccfe1c14567a907d

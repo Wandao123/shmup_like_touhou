@@ -41,14 +41,14 @@ public abstract class PlayerController : MoverController, IPlayerPhysicalState
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public class Player : Mover<PlayerController>, IInvincibility, IPlayerActivity, IPlayerPhysicalState
+public class Player : Mover<PlayerController, PlayerID>, IInvincibility, IPlayerActivity, IPlayerPhysicalState
 {
     private IInvincibility _invincibility;
 
-    public Player(GameObject gameObject)
-        : base(gameObject)
+    public Player(GameObject go, PlayerID id)
+        : base(go, id)
     {
-        _invincibility = gameObject.GetComponent<IInvincibility>();
+        _invincibility = go.GetComponent<IInvincibility>();
     }
 
     public uint InvincibleCount { get => _invincibility.InvincibleCount; }

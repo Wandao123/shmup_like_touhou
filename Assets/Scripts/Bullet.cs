@@ -32,10 +32,10 @@ public abstract class BulletController : MoverController
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public class Bullet : Mover<BulletController>, IBulletActivity
+public class Bullet : Mover<BulletController, BulletID>, IBulletActivity
 {
-    public Bullet(GameObject gameObject)
-        : base(gameObject)
+    public Bullet(GameObject go, BulletID id)
+        : base(go, id)
     {}
 
     public void Shot(float speed, float angle)  // 実体化関数

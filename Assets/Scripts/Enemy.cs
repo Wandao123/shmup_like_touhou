@@ -12,14 +12,14 @@ public abstract class EnemyController : MoverController {}
 
 // Luaのためのラッパークラス。
 [MoonSharpUserData]
-public class Enemy : Mover<EnemyController>, IInvincibility, IEnemyActivity
+public class Enemy : Mover<EnemyController, EnemyID>, IInvincibility, IEnemyActivity
 {
     private IInvincibility _invincibility;
 
-    public Enemy(GameObject gameObject)
-        : base(gameObject)
+    public Enemy(GameObject go, EnemyID id)
+        : base(go, id)
     {
-        _invincibility = gameObject.GetComponent<IInvincibility>();
+        _invincibility = go.GetComponent<IInvincibility>();
     }
 
     public uint InvincibleCount { get => _invincibility.InvincibleCount; }

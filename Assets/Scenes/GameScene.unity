@@ -506,11 +506,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _preloadedObjects:
-    list:
-    - Key: 5
-      Value: 1000
-    - Key: 4
-      Value: 1000
+    list: []
 --- !u!4 &1051586280
 Transform:
   m_ObjectHideFlags: 0

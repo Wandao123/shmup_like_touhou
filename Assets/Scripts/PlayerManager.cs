@@ -16,7 +16,7 @@ public enum PlayerID
     SanaeOption
 }
 
-public class PlayerManager : MoverManager<PlayerController, PlayerID>
+public class PlayerManager : MoverManager<Player, PlayerController, PlayerID>
 {
     private Vector2Int _characterSize;  // 本来はreadonlyにしたいところだが、MonoBehaviourを継承したクラスではコンストラクタが呼べないため、工夫が必要。
 
@@ -33,8 +33,18 @@ public class PlayerManager : MoverManager<PlayerController, PlayerID>
         // 予めオブジェクトを生成しておく場合はここに記述。
     }
 
-    public GameObject GetPlayer()
+    public Player GetPlayer()
     {
-        return _pool.FirstOrDefault(pooledObject => pooledObject.gameObject.GetComponent<PlayerCharacterController>() != null).gameObject;
+        return _pool.FirstOrDefault(pooledObject => pooledObject.mover is Player).mover;
+    }
+
+    protected override Player makeWrapper(GameObject go, PlayerID id)
+    {
+        return new Player(go, id);
+    }
+
+    protected override bool idEquals(PlayerID id1, PlayerID id2)
+    {
+        return id1 == id2;
     }
 }
