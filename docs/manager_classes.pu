@@ -1,4 +1,4 @@
-@startuml classes
+@startuml ManagerClasses
 interface IActivity {
     +Erase()
     +IsEnabled(): bool
@@ -78,12 +78,6 @@ interface ICollisionHandler {
     +GetHitPoint(): int
 }
 
-interface IInvincibility {
-    +GetInvincibleCount()
-    +IsInvincible(): bool
-    +TurnInvincible(frames: uint)
-}
-
 interface IPhysicalState {
     -angle: float
     -speed: float
@@ -103,9 +97,42 @@ end note
 
 IActivity <|.. Mover
 ICollisionHandler <|.. Mover
-IInvincibility <|.. Mover
 IPhysicalState <|.. Mover
 Mover <|-- Bullet
 Mover <|-- Enemy
 Mover <|-- Player
+
+interface IManagedBehaviour {
+    +ManagedFixedUpdate()
+}
+
+abstract MonoBehaviour
+note left of MonoBehaviour
+    From Unity
+end note
+
+MoverManager ..|> IManagedBehaviour
+MoverManager --|> MonoBehaviour
+
+/'class Activity {
+    +Spawned()
+}
+
+Activity ..|> IActivity
+Activity "1" --o "1" Mover
+
+abstract CollisionHandler {
+    #{abstract} OnTriggerEnter2D(other)
+}
+
+CollisionHandler ..|> ICollisionHandler
+CollisionHandler "1" --o "1" Mover
+
+abstract MoverController {
+    #{abstract} FixedUpdate()
+}
+
+MoverController ..|> IPhysicalState
+MoverController "1" --o "1" Mover
+MoverController ..|> IManagedBehaviour'/
 @enduml

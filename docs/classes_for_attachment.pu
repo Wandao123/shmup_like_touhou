@@ -1,4 +1,4 @@
-@startuml classes
+@startuml ClassesForAttachment
 abstract MonoBehaviour
 note left of MonoBehaviour
     From Unity
@@ -36,8 +36,8 @@ class AutoDisabling {
 }
 
 MonoBehaviour <|-- AutoDisabling
-AutoDisabling "1" o-- IActivity
-AutoDisabling "1" o-- IPhysicalState
+AutoDisabling "1" o-- "1" IActivity
+AutoDisabling "1" o-- "1" IPhysicalState
 
 interface IInvincibility {
     +GetInvincibleCount()
@@ -58,6 +58,7 @@ interface ICollisionHandler {
     -hitPoint: int
     +GetDamage(): int
     +GetHitPoint(): int
+    +SetHitPoint(hitPoint: int)
 }
 
 abstract CollisionHandler {
@@ -66,7 +67,7 @@ abstract CollisionHandler {
 
 MonoBehaviour <|-- CollisionHandler
 CollisionHandler ..|> ICollisionHandler
-CollisionHandler "1" o-- IActivity
+CollisionHandler "1" o-- "1" IActivity
 
 abstract MoverController {
     #{abstract} FixedUpdate()
@@ -74,7 +75,7 @@ abstract MoverController {
 
 MoverController --|> MonoBehaviour
 MoverController ..|> IPhysicalState
-MoverController <.. Activity
+MoverController <.. Activity : Enable/Disable
 
 abstract SpriteAnimator {
     -spriteRenderer
@@ -83,5 +84,26 @@ abstract SpriteAnimator {
 }
 
 SpriteAnimator --|> MonoBehaviour
-SpriteAnimator <.. Activity
+SpriteAnimator <.. Activity : Enable/Disable
+
+interface IManagedBehaviour {
+    +ManagedFixedUpdate()
+}
+
+IManagedBehaviour <|.. Activity
+IManagedBehaviour <|.. AutoDisabling
+MoverController ..|> IManagedBehaviour
+Invincibility ..|> IManagedBehaviour
+
+abstract Mover
+note top of Mover
+    Wrapper class
+end note
+
+MoverController "1" --o "1" Mover : Delegate
+Mover "1" o-- "1" Activity : Delegate
+Mover "1" o-- "1" CollisionHandler : Delegate
+Mover ..|> IActivity
+Mover ..|> ICollisionHandler
+Mover ..|> IPhysicalState
 @enduml
