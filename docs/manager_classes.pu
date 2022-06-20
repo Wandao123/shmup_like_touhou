@@ -21,7 +21,7 @@ IActivity <|-- IEnemyActivity
 IActivity <|-- IPlayerActivity
 
 abstract MoverManager {
-    -pool: List<Mover>
+    -pool: List<(Mover, IsEnabled, Update)>
     +GenerateObject(id: ObjectID): Mover
 }
 note bottom of MoverManager
@@ -48,19 +48,9 @@ Enemy "0..*" --o "1" EnemyManager
 IEnemyActivity <|.. Enemy
 Enemy "1" o-- EnemyID
 
-interface IPlayerPhysicalState {
-    +SlowMode: bool
-    +GetVelocity(velocity: Vector2)
-    +SetVelocity(): Vector2
-}
-
-IPhysicalState <|-- IPlayerPhysicalState
-
 enum PlayerID
 
-class PlayerManager {
-    +GetPlayer(): Player
-}
+class PlayerManager
 
 class Player
 
@@ -68,7 +58,6 @@ PlayerManager ..> PlayerID
 PlayerManager --|> MoverManager
 Player "0..*" --o "1" PlayerManager
 IPlayerActivity <|.. Player
-IPlayerPhysicalState <|.. Player
 Player "1" o-- PlayerID
 
 interface ICollisionHandler {
@@ -76,6 +65,7 @@ interface ICollisionHandler {
     -hitPoint: int
     +GetDamage(): int
     +GetHitPoint(): int
+    +SetHitPoint(hitPoint: int)
 }
 
 interface IPhysicalState {
@@ -91,7 +81,7 @@ interface IPhysicalState {
 }
 
 abstract Mover
-note bottom of Mover
+note right of Mover
     Wrapper class
 end note
 
@@ -107,12 +97,21 @@ interface IManagedBehaviour {
 }
 
 abstract MonoBehaviour
-note left of MonoBehaviour
+note bottom of MonoBehaviour
     From Unity
 end note
 
 MoverManager ..|> IManagedBehaviour
 MoverManager --|> MonoBehaviour
+
+abstract MoverController {
+    #{abstract} FixedUpdate()
+}
+
+IPhysicalState <|.. MoverController
+Mover "1" o-- "1" MoverController : Delegate
+MoverController ..|> IManagedBehaviour
+MoverController --|> MonoBehaviour
 
 /'class Activity {
     +Spawned()
@@ -126,13 +125,5 @@ abstract CollisionHandler {
 }
 
 CollisionHandler ..|> ICollisionHandler
-CollisionHandler "1" --o "1" Mover
-
-abstract MoverController {
-    #{abstract} FixedUpdate()
-}
-
-MoverController ..|> IPhysicalState
-MoverController "1" --o "1" Mover
-MoverController ..|> IManagedBehaviour'/
+CollisionHandler "1" --o "1" Mover'/
 @enduml

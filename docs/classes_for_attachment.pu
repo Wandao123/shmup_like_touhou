@@ -67,7 +67,8 @@ abstract CollisionHandler {
 
 MonoBehaviour <|-- CollisionHandler
 CollisionHandler ..|> ICollisionHandler
-CollisionHandler "1" o-- "1" IActivity
+CollisionHandler "1" o-- "1" IActivity : Observe
+IInvincibility "1" --o "1" CollisionHandler : Observe
 
 abstract MoverController {
     #{abstract} FixedUpdate()
@@ -75,7 +76,7 @@ abstract MoverController {
 
 MoverController --|> MonoBehaviour
 MoverController ..|> IPhysicalState
-MoverController <.. Activity : Enable/Disable
+MoverController "1" --o "1" Activity : Enable/Disable
 
 abstract SpriteAnimator {
     -spriteRenderer
@@ -84,7 +85,7 @@ abstract SpriteAnimator {
 }
 
 SpriteAnimator --|> MonoBehaviour
-SpriteAnimator <.. Activity : Enable/Disable
+SpriteAnimator "1" --o "1" Activity : Enable/Disable
 
 interface IManagedBehaviour {
     +ManagedFixedUpdate()
@@ -94,16 +95,4 @@ IManagedBehaviour <|.. Activity
 IManagedBehaviour <|.. AutoDisabling
 MoverController ..|> IManagedBehaviour
 Invincibility ..|> IManagedBehaviour
-
-abstract Mover
-note top of Mover
-    Wrapper class
-end note
-
-MoverController "1" --o "1" Mover : Delegate
-Mover "1" o-- "1" Activity : Delegate
-Mover "1" o-- "1" CollisionHandler : Delegate
-Mover ..|> IActivity
-Mover ..|> ICollisionHandler
-Mover ..|> IPhysicalState
 @enduml

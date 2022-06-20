@@ -1,31 +1,34 @@
 @startuml GeneratingObject
 actor Developer
-participant ScriptDirector
+participant ScriptManager
 participant MoverManager
 participant Addressenble
 participant Mover
 
-Developer -> ScriptDirector : Writing scripts
-ScriptDirector -> MoverManager : Generating request through ID
+Developer -> ScriptManager : Writing scripts
+ScriptManager -> MoverManager : Generating request through ID
 MoverManager -> Addressenble : Loading
 Addressenble --> MoverManager : Prefab
-MoverManager -> Mover : Constructing by a prefab
+MoverManager -> Mover : Constructing by the prefab
 Mover --> MoverManager : Instance
-MoverManager --> ScriptDirector : Generating response
-ScriptDirector --> Developer : Game object
+MoverManager --> ScriptManager : Generating response
+ScriptManager --> Developer : Game object
+Developer --> Developer : Spawning the object
 @enduml
 
 @startuml UpdatingObjects
 entity UnityEngine
-participant ScriptDirector
+participant GameDirector
+participant ScriptManager
 participant LuaScript
 participant MoverManager
 participant Mover
 
-UnityEngine -> ScriptDirector : Update
-ScriptDirector -> LuaScript : Proceed with the program
-LuaScript -> Mover : Request changing states
-ScriptDirector -> MoverManager : Update
-MoverManager -> Mover : Update
-Mover -> Mover : Change one's states
+UnityEngine -> GameDirector : Updating
+GameDirector -> ScriptManager : Updating
+ScriptManager -> LuaScript : Proceeding with the program
+LuaScript -> Mover : Changing request for states
+GameDirector -> MoverManager : Updating
+MoverManager -> Mover : Updating
+Mover -> Mover : Changing one's states
 @enduml

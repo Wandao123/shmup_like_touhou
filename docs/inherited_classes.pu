@@ -1,25 +1,3 @@
-@startuml CollisionHandler
-abstract CollisionHandler {
-    #{abstract} OnTriggerEnter2D(other)
-}
-
-class BulletCollisionHandler {
-    #OnTriggerEnter2D(other)
-}
-
-class EnemyCollisionHandler {
-    #OnTriggerEnter2D(other)
-}
-
-class PlayerCollisionHandler {
-    #OnTriggerEnter2D(other)
-}
-
-CollisionHandler <|-- BulletCollisionHandler
-CollisionHandler <|-- EnemyCollisionHandler
-CollisionHandler <|-- PlayerCollisionHandler
-@enduml
-
 @startuml SpriteAnimator
 abstract SpriteAnimator {
     -spriteRenderer
@@ -59,7 +37,51 @@ SpriteAnimator <|-- PlayerCharacterAnimator
 SpriteAnimator <|-- PlayerOptionAnimator
 @enduml
 
-@startuml Controller
+@startuml WrapperClass
+class Activity {
+    +Erase()
+    +IsEnabled(): bool
+    +Spawned()
+}
+
+abstract CollisionHandler {
+    -damage: int
+    -hitPoint: int
+    +GetDamage(): int
+    +GetHitPoint(): int
+    +SetHitPoint(hitPoint: int)
+    #{abstract} OnTriggerEnter2D(other)
+}
+
+class BulletCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class EnemyCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+class PlayerCollisionHandler {
+    #OnTriggerEnter2D(other)
+}
+
+BulletCollisionHandler --|> CollisionHandler
+EnemyCollisionHandler --|> CollisionHandler
+PlayerCollisionHandler --|> CollisionHandler
+
+abstract MoverController {
+    -angle: float
+    -speed: float
+    -rigidBody2D
+    +GetPosition(): Vector2
+    +SetPosition(position: Vector2)
+    +GetAngle(): float
+    +SetAngle(angle: float)
+    +GetSpeed(): float
+    +SetSpeed(speed: float)
+    #{abstract} FixedUpdate()
+}
+
 class PlayerCharacterController {
     #FixedUpdate()
 }
@@ -68,8 +90,8 @@ class PlayerOptionController {
     #FixedUpdate()
 }
 
-PlayerOptionController --|> PlayerController
-PlayerCharacterController --|> PlayerController
+PlayerController <|-- PlayerOptionController
+PlayerController <|-- PlayerCharacterController
 
 class BulletController {
     #FixedUpdate()
@@ -85,13 +107,26 @@ class PlayerController {
 
 MoverController <|-- BulletController
 MoverController <|-- EnemyController
-PlayerController --|> MoverController
+MoverController <|-- PlayerController
 
-interface IPlayerPhysicalState {
-    +SlowMode: bool
-    +GetVelocity(velocity: Vector2)
-    +SetVelocity(): Vector2
+abstract Mover {
+    +Erase()
+    +IsEnabled(): bool
+    +GetDamage(): int
+    +GetHitPoint(): int
+    +SetHitPoint(hitPoint: int)
+    +GetPosition(): Vector2
+    +SetPosition(position: Vector2)
+    +GetAngle(): float
+    +SetAngle(angle: float)
+    +GetSpeed(): float
+    +SetSpeed(speed: float)
 }
+note right of Mover
+    Wrapper class
+end note
 
-IPlayerPhysicalState <|.. PlayerController
+Mover "1" o-- "1" MoverController : Delegate
+Activity "1" --o "1" Mover : Delegate
+CollisionHandler "1" --o "1" Mover : Delegate
 @enduml
