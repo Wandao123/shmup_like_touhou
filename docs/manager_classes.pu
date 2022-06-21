@@ -94,6 +94,7 @@ Mover <|-- Player
 
 interface IManagedBehaviour {
     +ManagedFixedUpdate()
+    +ManagedUpdate()
 }
 
 abstract MonoBehaviour

@@ -89,6 +89,7 @@ SpriteAnimator "1" --o "1" Activity : Enable/Disable
 
 interface IManagedBehaviour {
     +ManagedFixedUpdate()
+    +ManagedUpdate()
 }
 
 IManagedBehaviour <|.. Activity

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-//using UnityEngine.Pool;
+//using UnityEngine.Pool;  // Unityが提供するライブラリだと、一種類のオブジェクトしかプーリングできないようなので、自前で実装する。
 
 /// <summary>衝突判定の対象となるオブジェクト。自機と敵と弾の親クラス。</summary>
 /// <remarks>
@@ -49,6 +49,8 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
     {
         _rigid2D.velocity = new Vector2(Speed * Mathf.Cos(Angle), Speed * Mathf.Sin(Angle)) / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
+
+    public void ManagedUpdate() {}
 
     protected virtual void Awake()
     {
@@ -102,7 +104,7 @@ public abstract class Mover<TController, MoverID> : IActivity, IPhysicalState, I
 /// 生成の際には、もし使われていないGameObjectが存在すればそれを返し、もし全てが使われていれば新たに生成する。
 /// 列挙型IDの要素は複製対象のプレハブ名との一致を要請する。
 /// </remarks>
-public abstract class MoverManager<TMover, TController, MoverID> : MonoBehaviour, IManagedBehaviour
+public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehaviour
     where TMover : Mover<TController, MoverID>
     where TController : MoverController
     where MoverID : Enum
@@ -126,7 +128,7 @@ public abstract class MoverManager<TMover, TController, MoverID> : MonoBehaviour
     /// <remarks>
     /// 生成されたGameObjectは描画されず、物理演算も実行されない。返り値に対して「実体化関数」を呼ぶことで、それらが有効化される。
     /// </remarks>
-    public TMover GenerateObject(MoverID id, Vector2 position)
+    public TMover GenerateObject(MoverID id, in Vector2 position)
     {
         // 未使用のものを検索。変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
         if (_pool
@@ -139,12 +141,12 @@ public abstract class MoverManager<TMover, TController, MoverID> : MonoBehaviour
         }
 
         // 新しいオブジェクトの生成。
-        //var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
-        //var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
+        var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
+        var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
         //prefab.transform.parent = transform;
-        //newObject.name = prefab.name;
-        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, transform).WaitForCompletion();
-        newObject.name = id.ToString();
+        newObject.name = prefab.name;
+        //var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, transform).WaitForCompletion();
+        //newObject.name = id.ToString();
         var mover = makeWrapper(newObject, id);
         Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
         Action fixedUpdate = default;
@@ -163,6 +165,8 @@ public abstract class MoverManager<TMover, TController, MoverID> : MonoBehaviour
             if (pooledObject.isEnabled())
                 pooledObject.fixedUpdate();
     }
+
+    public void ManagedUpdate() {}
 
     protected abstract TMover makeWrapper(GameObject go, MoverID id);  // new制約を使うと引数が渡せない上に遅くなるので、子クラスで生成用関数を定義。
     protected abstract bool idEquals(MoverID id1, MoverID id2);  // ジェネリックスの関係で等号が使えないので、子クラスに任せる。

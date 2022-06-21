@@ -22,7 +22,7 @@ public class PlayerManager : MoverManager<Player, PlayerController, PlayerID>
 
     public Vector2Int CharacterSize { get => _characterSize; }
 
-    private void Awake()
+    public PlayerManager()
     {
         var prefab = Addressables.LoadAssetAsync<GameObject>(((PlayerID)0).ToString()).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
         Vector2 size = prefab.GetComponent<SpriteRenderer>().bounds.size;

@@ -10,7 +10,7 @@ public enum EnemyID
 
 public class EnemyManager : MoverManager<Enemy, EnemyController, EnemyID>
 {
-    private void Awake()
+    public EnemyManager()
     {
         // 予めオブジェクトを生成しておく場合はここに記述。
     }

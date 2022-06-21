@@ -27,6 +27,8 @@ public class AutoDisabling : MonoBehaviour, IManagedBehaviour
             _activity.Erase();
     }
 
+    public void ManagedUpdate() {}
+
     private void OnEnable()
     {
 	    _existingCounter = 0;

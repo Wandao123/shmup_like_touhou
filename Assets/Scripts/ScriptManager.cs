@@ -30,31 +30,21 @@ public enum CommandID : int {
 
 // 参考：https://qiita.com/sevenstartears/items/b8ebd3939211b68fcaa4
 //       https://eims.hatenablog.com/entry/2018/09/25/021420
-public class ScriptDirector : MonoBehaviour
+public class ScriptManager : IManagedBehaviour
 {
-    private Vector2 _screenBottomLeft, _screenTopRight;  // 本来はreadonlyにしたいところだが、Unityではコンストラクタが呼べないため、工夫が必要。
-    private Vector2Int _playerSize;
+    private IGameDirector _gameDirector;
     private ShmupInputActions _inputActions;
     private Dictionary<CommandID, Func<bool>> _mapping;
-    [SerializeField]
-    private EnemyManager _enemyManager;
-    [SerializeField]
-    private PlayerManager _playerManager;
-    [SerializeField]
-    private BulletManager _enemyBulletManager;
-    [SerializeField]
-    private BulletManager _playerBulletManager;
     private Script _script;
-    private Player _player;
 
     // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
     public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
 
-    private void Awake()
+    public ScriptManager(in IGameDirector gameDirector)
     {
-        _screenBottomLeft = Camera.main.ViewportToWorldPoint(Vector2.zero);
-        _screenTopRight = Camera.main.ViewportToWorldPoint(Vector2.one);
+        _gameDirector = gameDirector;
 
+        // 入力関係の初期化。
         _inputActions = new ShmupInputActions();
         _inputActions.Enable();
         _mapping = new Dictionary<CommandID, Func<bool>>() {
@@ -69,40 +59,28 @@ public class ScriptDirector : MonoBehaviour
             { CommandID.Pause, _inputActions.Player.Pause.IsPressed }
         };
 
+        // Lua (MoonSharp) の設定。
         _script = new Script();
         _script.Options.ScriptLoader = new MoonSharp.Interpreter.REPL.ReplInterpreterScriptLoader();
         ((ScriptLoaderBase)_script.Options.ScriptLoader).ModulePaths = ScriptLoaderBase.UnpackStringPaths("Assets/lua_scripts/?;Assets/lua_scripts/?.lua");
-        _script.Options.DebugPrint = s => Debug.Log(s);
+        _script.Options.DebugPrint = s => _gameDirector.Print(s);
         registerClasses();
+        registerConstants();
         registerGlueFunctions();
         UserData.RegisterAssembly();
-    }
 
-    private void Start()
-    {
-        _playerSize = _playerManager.CharacterSize;
-        //StartCoroutine(playerScript());
-        //StartCoroutine(stageScript());
+        // C#のスクリプトを開始。
+        //_gameDirector.StartCoroutine(playerScript());
+        //_gameDirector.StartCoroutine(stageScript());
 
-        registerConstants();
+        // Luaのスクリプトを開始。
         _script.DoFile("Assets/lua_scripts/main.lua");
-        StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
+        _gameDirector.StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 
-    private void Update()
-    {
-        
-    }
+    public void ManagedFixedUpdate() {}
 
-    private void FixedUpdate()
-    {
-        _enemyManager.ManagedFixedUpdate();
-        _playerManager.ManagedFixedUpdate();
-        _enemyBulletManager.ManagedFixedUpdate();
-        _playerBulletManager.ManagedFixedUpdate();
-    }
-
-    private void OnDestroy()
+    public void ManagedUpdate()
     {
         
     }
@@ -124,8 +102,8 @@ public class ScriptDirector : MonoBehaviour
     private void registerConstants()
     {
         _script.Globals["Vector2"] = typeof(Vector2);
-        _script.Globals["ScreenTopRight"] = _screenTopRight;
-        _script.Globals["ScreenBottomLeft"] = _screenBottomLeft;
+        _script.Globals["ScreenTopRight"] = _gameDirector.ScreenTopRight;
+        _script.Globals["ScreenBottomLeft"] = _gameDirector.ScreenBottomLeft;
         _script.Globals["ScreenTopLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0, 1));
         _script.Globals["ScreenBottomRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1, 0));
         _script.Globals["ScreenCenter"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.5f));
@@ -133,7 +111,7 @@ public class ScriptDirector : MonoBehaviour
         _script.Globals["ScreenBottom"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.0f));
         _script.Globals["ScreenLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.0f, 0.5f));
         _script.Globals["ScreenRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1.0f, 0.5f));
-        _script.Globals["PlayerSize"] = _playerSize;
+        _script.Globals["PlayerSize"] = _gameDirector.PlayerSize;
         _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
         _script.Globals["CommandID"] = UserData.CreateStatic<CommandID>();
         _script.Globals["EnemyID"] = UserData.CreateStatic<EnemyID>();
@@ -145,7 +123,7 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, Bullet> generateBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _enemyBulletManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _gameDirector.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return newObject;
         };
@@ -154,7 +132,7 @@ public class ScriptDirector : MonoBehaviour
         Func<BulletID, float, float, float, float, Bullet> generatePlayerBullet =
         (BulletID id, float posX, float posY, float speed, float angle) =>
         {
-            var newObject = _playerBulletManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _gameDirector.GenerateObject(id, new Vector2(posX, posY));
             newObject.Shot(speed, angle);
             return newObject;
         };
@@ -163,7 +141,7 @@ public class ScriptDirector : MonoBehaviour
         Func<EnemyID, float, float, float, float, int, Enemy> generateEnemy =
         (EnemyID id, float posX, float posY, float speed, float angle, int hitPoint) =>
         {
-            var newObject = _enemyManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _gameDirector.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned(speed, angle, hitPoint);
             return newObject;
         };
@@ -172,23 +150,17 @@ public class ScriptDirector : MonoBehaviour
         Func<PlayerID, float, float, Player> generatePlayer =
         (PlayerID id, float posX, float posY) =>
         {
-            var newObject = _playerManager.GenerateObject(id, new Vector2(posX, posY));
+            var newObject = _gameDirector.GenerateObject(id, new Vector2(posX, posY));
             newObject.Spawned();
             return newObject;
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
-        Func<Player> getPlayer = () =>
-        {
-            return _playerManager.GetPlayer();
-        };
-        _script.Globals["GetPlayer"] = getPlayer;
-
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 
         AppliedFunc<DynValue, DynValue, UnityEngine.Coroutine> luaStartCoroutineWithArgs =
-        (func, args) => StartCoroutine(runLuaCoroutine(func, args));
+        (func, args) => _gameDirector.StartCoroutine(runLuaCoroutine(func, args));
         _script.Globals["StartCoroutineWithArgs"] = luaStartCoroutineWithArgs;
         _script.DoString(@"
             function StartCoroutine(func, ...)
@@ -207,7 +179,9 @@ public class ScriptDirector : MonoBehaviour
         }
     }
 
-    // Luaを使わない方法。
+    //**************** Luaを使わずにC#のみでゲーム・ロジックを記述する方法 ****************
+    private Player _player;
+
     private IEnumerator wait(uint numFrames)
     {
         for (var i = 1; i <= numFrames; i++)
@@ -223,7 +197,7 @@ public class ScriptDirector : MonoBehaviour
 
         IEnumerator initialize()
         {
-            _player = _playerManager.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y + InputDelayFrames));
+            _player = _gameDirector.GenerateObject(PlayerID.Reimu, new Vector2(0.0f, _gameDirector.ScreenBottomLeft.y - _gameDirector.PlayerSize.y + InputDelayFrames));
             _player.Spawned();
             _player.TurnInvincible(InvincibleFrames / 2);
             yield break;
@@ -233,7 +207,7 @@ public class ScriptDirector : MonoBehaviour
         {
             if (!_player.IsEnabled() && _player.HitPoint > 0)
             {
-                _player.Position = new Vector2(0.0f, _screenBottomLeft.y - _playerSize.y);
+                _player.Position = new Vector2(0.0f, _gameDirector.ScreenBottomLeft.y - _gameDirector.PlayerSize.y);
                 _player.Spawned();
                 _player.TurnInvincible(InvincibleFrames);
                 yield return null;
@@ -262,8 +236,8 @@ public class ScriptDirector : MonoBehaviour
             {
                 if (_inputActions.Player.Shot.IsPressed())
                 {
-                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
-                    _playerBulletManager.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
                     //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
@@ -303,9 +277,9 @@ public class ScriptDirector : MonoBehaviour
 
     private IEnumerator stageScript()
     {
-        var smallRedFairy = _enemyManager.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_screenBottomLeft.x * 0.5f, _screenTopRight.y));
+        var smallRedFairy = _gameDirector.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_gameDirector.ScreenBottomLeft.x * 0.5f, _gameDirector.ScreenTopRight.y));
         smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
-        var smallBlueFairy = _enemyManager.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_screenTopRight.x * 0.5f, _screenTopRight.y));
+        var smallBlueFairy = _gameDirector.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_gameDirector.ScreenTopRight.x * 0.5f, _gameDirector.ScreenTopRight.y));
         smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
@@ -313,10 +287,10 @@ public class ScriptDirector : MonoBehaviour
             if (i % 6 == 0)
             {
                 if (smallRedFairy.IsEnabled())
-                    _enemyBulletManager.GenerateObject(BulletID.ScaleRedBullet, smallRedFairy.Position)
+                    _gameDirector.GenerateObject(BulletID.ScaleRedBullet, smallRedFairy.Position)
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x));
                 if (smallBlueFairy.IsEnabled())
-                    _enemyBulletManager.GenerateObject(BulletID.ScaleBlueBullet, smallBlueFairy.Position)
+                    _gameDirector.GenerateObject(BulletID.ScaleBlueBullet, smallBlueFairy.Position)
                     .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x));
             }
             smallRedFairy.Angle += Mathf.Deg2Rad;

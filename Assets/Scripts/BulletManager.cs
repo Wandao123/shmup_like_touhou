@@ -18,6 +18,7 @@ public enum BulletID
     ScaleBlueBullet,
     RiceRedBullet,
     RiceBlueBullet,
+    DummyEnemyBullet,
     // 自弾。
     ReimuNormalBullet,
     MarisaNormalBullet,
@@ -35,13 +36,10 @@ public class PreloadedBulletsPair : Serialize.KeyAndValue<BulletID, uint>
 
 public class BulletManager : MoverManager<Bullet, BulletController, BulletID>
 {
-    [SerializeField]
-    private PreloadedBullets _preloadedObjects;
-
-    private void Awake()
+    public BulletManager()
     {
         // 予めオブジェクトを生成しておく場合はここに記述。
-        var bulletsList = new List<Bullet>();
+        /*var bulletsList = new List<Bullet>();
         foreach (var pair in _preloadedObjects.GetTable())
             for (var i = 1; i <= pair.Value; i++)
             {
@@ -49,7 +47,7 @@ public class BulletManager : MoverManager<Bullet, BulletController, BulletID>
                 bullet.Shot(0.0f, 0.0f);
                 bulletsList.Add(bullet);
             }
-        bulletsList.Select(bullet => { bullet.Erase(); return bullet; });
+        bulletsList.Select(bullet => { bullet.Erase(); return bullet; });*/
     }
 
     protected override Bullet makeWrapper(GameObject go, BulletID id)

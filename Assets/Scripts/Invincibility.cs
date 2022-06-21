@@ -22,6 +22,8 @@ public class Invincibility : MonoBehaviour, IInvincibility, IManagedBehaviour
         _invincibleCounter = (_invincibleCounter > 0) ? _invincibleCounter - 1 : 0;
     }
 
+    public void ManagedUpdate() {}
+
     public bool IsInvincible()
     {
         return _invincibleCounter > 0;

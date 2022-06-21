@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FrameRateDirector : MonoBehaviour
+public class FrameRateManager : MonoBehaviour
 {
     private const int ScreenWidth = 640;
     private const int ScreenHeight = 480;

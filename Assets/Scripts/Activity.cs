@@ -11,6 +11,7 @@ public interface IActivity
 interface IManagedBehaviour
 {
     void ManagedFixedUpdate();
+    void ManagedUpdate();
 }
 
 public class Activity : MonoBehaviour, IActivity
