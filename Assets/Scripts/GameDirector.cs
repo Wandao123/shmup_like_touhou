@@ -82,7 +82,6 @@ public class GameDirector : MonoBehaviour, IGameDirector
 
     public Enemy GenerateObject(EnemyID id, in Vector2 position) => _enemyManager.GenerateObject(id, position);
     public Player GenerateObject(PlayerID id, in Vector2 position) => _playerManager.GenerateObject(id, position);
-    //public Coroutine RegisterCoroutine(string methodName, object value=null) => StartCoroutine(methodName, value);
     public void Print(object message) => Debug.Log(message);
     public void Print(object message, Object context) => Debug.Log(message, context);
 }

@@ -38,11 +38,10 @@ local function Rebirth()
 		player:Spawned()
 		player:TurnInvincible(parameters.InvincibleFrames);
 		coroutine.yield()
-		for i = 1, parameters.InputDelayFrames do
+		stg:Wait(parameters.InputDelayFrames, function()
 			-- ここでVelocityを変更すると、移動制限処理のところで不具合が生じる。
 			player.Position = player.Position + ScreenTop.normalized
-			coroutine.yield()
-		end
+		end)
 	end
 end
 

@@ -3,8 +3,11 @@ local stg = {}
 
 -- 指定されたフレーム数だけ待つ。
 -- frames: 待機するフレーム数.
-function stg:Wait(frames)
+-- func: 待機中に実行する関数.
+function stg:Wait(frames, func, ...)
+	func = func or function() end  -- デフォルト引数。
 	for i = 1, frames do
+		func(...)  -- 引数が過剰な場合は無視されることに注意。
 		coroutine.yield()
 	end
 end
@@ -41,6 +44,8 @@ end
 
 -- 画面の左上と右上をa:bに内分する点の座標。
 function stg:DivideInternallyScreenTop(a, b)
+	local ScreenTopLeft = ScreenTop + (ScreenLeft - ScreenRight) * 0.5
+	local ScreenTopRight = ScreenTop - (ScreenLeft - ScreenRight) * 0.5
 	return ScreenTopLeft * b / (a + b) + ScreenTopRight * a / (a + b)
 end
 

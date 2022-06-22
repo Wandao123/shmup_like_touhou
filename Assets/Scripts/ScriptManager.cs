@@ -82,7 +82,7 @@ public class ScriptManager : IManagedBehaviour
 
     public void ManagedUpdate()
     {
-        
+        // TODO: Unityのコルーチンに丸投げせずに、Luaのコルーチンを自前で管理するように変更。
     }
 
     private void registerClasses()
@@ -102,15 +102,13 @@ public class ScriptManager : IManagedBehaviour
     private void registerConstants()
     {
         _script.Globals["Vector2"] = typeof(Vector2);
-        _script.Globals["ScreenTopRight"] = _gameDirector.ScreenTopRight;
-        _script.Globals["ScreenBottomLeft"] = _gameDirector.ScreenBottomLeft;
-        _script.Globals["ScreenTopLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0, 1));
-        _script.Globals["ScreenBottomRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1, 0));
-        _script.Globals["ScreenCenter"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.5f));
-        _script.Globals["ScreenTop"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 1.0f));
-        _script.Globals["ScreenBottom"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.5f, 0.0f));
-        _script.Globals["ScreenLeft"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(0.0f, 0.5f));
-        _script.Globals["ScreenRight"] = (Vector2)Camera.main.ViewportToWorldPoint(new Vector2(1.0f, 0.5f));
+        _script.Globals["ScreenCenter"] = _gameDirector.ScreenBottomLeft + (_gameDirector.ScreenTopRight - _gameDirector.ScreenBottomLeft) * 0.5f;
+        var halfOfHorizontalSide = (new Vector2(_gameDirector.ScreenTopRight.x - _gameDirector.ScreenBottomLeft.x, 0.0f)) * 0.5f;
+        var halfOfVerticalSide = (new Vector2(0.0f, _gameDirector.ScreenTopRight.y - _gameDirector.ScreenBottomLeft.y)) * 0.5f;
+        _script.Globals["ScreenTop"] = _gameDirector.ScreenTopRight - halfOfHorizontalSide;
+        _script.Globals["ScreenBottom"] = _gameDirector.ScreenBottomLeft + halfOfHorizontalSide;
+        _script.Globals["ScreenLeft"] = _gameDirector.ScreenBottomLeft + halfOfVerticalSide;
+        _script.Globals["ScreenRight"] = _gameDirector.ScreenTopRight - halfOfVerticalSide;
         _script.Globals["PlayerSize"] = _gameDirector.PlayerSize;
         _script.Globals["BulletID"] = UserData.CreateStatic<BulletID>();
         _script.Globals["CommandID"] = UserData.CreateStatic<CommandID>();

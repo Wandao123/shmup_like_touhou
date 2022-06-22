@@ -83,8 +83,8 @@ local function AllDirection(initPosX, ways)
 end
 
 -- 『東方紅魔郷』1面前半道中の大雑把な再現。ただし、4番目の編隊はランダムなので、原作とは異なる。
-function stage:Start()
-	player = GetPlayer()
+function stage:Start(playerObject)
+	player = playerObject
 	stg:Wait(120)
 	for i = 1, 5 do  -- 5体生成する。
 		StartCoroutine(Curve, EnemyID.SmallBlueFairy, stg:DivideInternallyScreenTop(1, 3).x, 2, 30, 1, 30)
