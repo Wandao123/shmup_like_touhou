@@ -74,7 +74,7 @@ public class ScriptManager : IManagedBehaviour
         //_gameDirector.StartCoroutine(stageScript());
 
         // Luaのスクリプトを開始。
-        _script.DoFile("Assets/lua_scripts/main.lua");
+        _script.DoFile(_gameDirector.MainScriptFilename);
         _gameDirector.StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
     }
 

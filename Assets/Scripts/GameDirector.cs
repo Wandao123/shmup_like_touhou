@@ -4,6 +4,7 @@ using UnityEngine;
 
 public interface IGameDirector
 {
+    string MainScriptFilename { get; }
     Vector2Int PlayerSize { get; }
     Vector2 ScreenBottomLeft { get; }
     Vector2 ScreenTopRight { get; }
@@ -25,8 +26,11 @@ public class GameDirector : MonoBehaviour, IGameDirector
     private BulletManager _enemyBulletManager;
     private BulletManager _playerBulletManager;
     [SerializeField]
+    private string _mainScriptFilename = "Assets/lua_scripts/main.lua";
+    [SerializeField]
     private PreloadedBullets _preloadedBullets;
 
+    public string MainScriptFilename { get => _mainScriptFilename; }
     // 本来はreadonlyな変数にしたいところだが、Unityではコンストラクタが呼べないため、プロパティで読み出す。
     public Vector2Int PlayerSize { get => _playerManager.CharacterSize; }
     public Vector2 ScreenBottomLeft { get => Camera.main.ViewportToWorldPoint(Vector2.zero); }
