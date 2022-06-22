@@ -1,0 +1,64 @@
+@startuml GameLoop
+actor Developer
+boundary GameScripts
+entity UnityEngine
+participant GameDirector
+participant ScriptManager
+participant MoverManager
+participant Addressenble
+participant Mover
+participant Activity
+participant MoverController
+participant SpriteAnimator
+participant Invincibility
+
+group Loading game scripts
+    Developer -> GameScripts : Writing
+    GameScripts -> ScriptManager : Loading
+    ScriptManager -> GameScripts : Game objects and functions
+end
+
+group Generating a object
+    GameScripts -> ScriptManager : Generating a object
+    ScriptManager -> MoverManager : Generating request through ID
+    MoverManager -> Addressenble : Loading
+    Addressenble --> MoverManager : Prefab
+    MoverManager -> Mover : Constructing it through the prefab
+    Mover --> MoverManager : Instance
+    MoverManager --> ScriptManager : Generating response
+    ScriptManager -> Mover : Spawning the instance
+    Mover -> Mover : Spawned
+    ScriptManager --> GameScripts : Instance
+end
+
+group Changing physical state of a object
+    GameScripts -> Mover : Changing state
+    Mover -> MoverController : Reseting one's position/velocity
+    MoverController -> MoverController : Reseting
+end
+
+group Making a object turn invincible
+    GameScripts -> Mover : Turning invincible
+    Mover -> Invincibility : Invincibility request
+    Invincibility -> Invincibility : Decreasing\ninvincible count
+end
+
+group Erasing/Spawned Process
+    GameScripts -> Mover : Erasing/Spawned request
+    Mover -> Activity : Erasing/Spawned request
+    Activity -> MoverController : Disable/Enable
+    Activity -> SpriteAnimator : Disablie/Enable
+end
+
+group Updating objects
+    UnityEngine -> GameDirector : Updating a MonoBehaviour
+    GameDirector -> ScriptManager : Update request
+    ScriptManager -> GameScripts : Proceeding with the program
+    GameScripts --> ScriptManager : The next line
+    GameDirector -> MoverManager : Update request
+    MoverManager -> Mover : Update requests
+    Mover -> Mover : Changing one's position
+    GameDirector -> SpriteAnimator : Update request
+    SpriteAnimator -> SpriteAnimator : Changing the current clip\nto the next clip
+end
+@enduml
