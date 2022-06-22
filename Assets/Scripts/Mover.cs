@@ -109,7 +109,7 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
     where TController : MoverController
     where MoverID : Enum
 {
-    protected ICollection<(TMover mover, Func<bool> isEnabled, Action fixedUpdate)> _pool = new List<(TMover mover, Func<bool> isEnabled, Action fixedUpdate)>();
+    protected ICollection<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)> _pool = new List<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)>();
 
     public ICollection<TMover> ObjectsList
     {
@@ -132,9 +132,9 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
     {
         // 未使用のものを検索。変数への参照数でも判定したいが、Unityから参照されているものの判別が難しい上に、C#はC++ほど簡単に参照数を取得できなさそう（単に0か否かの峻別は可能）。
         if (_pool
-            .FirstOrDefault(pooledObject => idEquals(pooledObject.mover.ID, id) && !pooledObject.isEnabled())
+            .FirstOrDefault(pooledObject => equal(pooledObject.mover.ID, id) && !pooledObject.isEnabled())
             is var first
-            && first != default((TMover, Func<bool>, Action)))
+            && first != default((TMover, Func<bool>, Action, Action)))
         {
             first.mover.Position = position;
             return first.mover;
@@ -150,9 +150,13 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
         var mover = makeWrapper(newObject, id);
         Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
         Action fixedUpdate = default;
+        Action update = default;
         foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
+        {
             fixedUpdate += behaviour.ManagedFixedUpdate;
-        _pool.Add((mover, isEnabled, fixedUpdate));
+            update += behaviour.ManagedUpdate;
+        }
+        _pool.Add((mover, isEnabled, fixedUpdate, update));
         return mover;
     }
 
@@ -166,10 +170,15 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
                 pooledObject.fixedUpdate();
     }
 
-    public void ManagedUpdate() {}
+    public void ManagedUpdate()
+    {
+        foreach (var pooledObject in _pool)
+            if (pooledObject.isEnabled())
+                pooledObject.update();
+    }
 
     protected abstract TMover makeWrapper(GameObject go, MoverID id);  // new制約を使うと引数が渡せない上に遅くなるので、子クラスで生成用関数を定義。
-    protected abstract bool idEquals(MoverID id1, MoverID id2);  // ジェネリックスの関係で等号が使えないので、子クラスに任せる。
+    protected abstract bool equal(MoverID id1, MoverID id2);  // ジェネリックスの関係で等号が使えないので、子クラスに任せる。
 }
 
 // 参考：https://qiita.com/k_yanase/items/fb64ccfe1c14567a907d

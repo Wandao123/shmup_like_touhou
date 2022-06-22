@@ -55,7 +55,7 @@ public class BulletManager : MoverManager<Bullet, BulletController, BulletID>
         return new Bullet(go, id);
     }
 
-    protected override bool idEquals(BulletID id1, BulletID id2)
+    protected override bool equal(BulletID id1, BulletID id2)
     {
         return id1 == id2;
     }

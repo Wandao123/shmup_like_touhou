@@ -20,7 +20,7 @@ public class EnemyManager : MoverManager<Enemy, EnemyController, EnemyID>
         return new Enemy(go, id);
     }
 
-    protected override bool idEquals(EnemyID id1, EnemyID id2)
+    protected override bool equal(EnemyID id1, EnemyID id2)
     {
         return id1 == id2;
     }

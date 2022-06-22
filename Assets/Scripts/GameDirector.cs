@@ -60,6 +60,10 @@ public class GameDirector : MonoBehaviour, IGameDirector
     private void Update()
     {
         _scriptManager.ManagedUpdate();
+        _enemyManager.ManagedUpdate();
+        _playerManager.ManagedUpdate();
+        _enemyBulletManager.ManagedUpdate();
+        _playerBulletManager.ManagedUpdate();
     }
 
     private void OnDestroy()

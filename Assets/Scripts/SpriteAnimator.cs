@@ -1,12 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public abstract class SpriteAnimator : MonoBehaviour
+public abstract class SpriteAnimator : MonoBehaviour, IManagedBehaviour
 {
     [SerializeField]
     private string _reference;
@@ -29,7 +28,9 @@ public abstract class SpriteAnimator : MonoBehaviour
         _spriteRenderer.enabled = true;
     }
 
-    protected virtual void Update()
+    public void ManagedFixedUpdate() {}
+ 
+    public virtual void ManagedUpdate()
     {
         _spriteRenderer.sprite = clipFromImage(Time.frameCount);  // HACK: ポーズの時に狂う？
     }

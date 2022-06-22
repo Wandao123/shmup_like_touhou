@@ -21,7 +21,7 @@ IActivity <|-- IEnemyActivity
 IActivity <|-- IPlayerActivity
 
 abstract MoverManager {
-    -pool: List<(Mover, IsEnabled, Update)>
+    -pool: List<(Mover, IsEnabled, FixedUpdate, Update)>
     +GenerateObject(id: ObjectID): Mover
 }
 note bottom of MoverManager

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class NormalEnemyAnimator : SpriteAnimator
@@ -21,9 +19,9 @@ public class NormalEnemyAnimator : SpriteAnimator
         _physicalState = GetComponent<IPhysicalState>();
     }
 
-    protected override void Update()
+    public override void ManagedUpdate()
     {
-        base.Update();
+        base.ManagedUpdate();
         if (_datectDamaged())  // 点滅する。Sinを使ったらどうか？
         {
             _spriteRenderer.color = new Color(0.5f, 0.5f, 0.5f);

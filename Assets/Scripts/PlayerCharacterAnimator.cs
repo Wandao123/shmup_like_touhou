@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerCharacterAnimator : SpriteAnimator
@@ -23,9 +21,9 @@ public class PlayerCharacterAnimator : SpriteAnimator
         _physicalState = GetComponent<IPlayerPhysicalState>();
     }
 
-    protected override void Update()
+    public override void ManagedUpdate()
     {
-        base.Update();
+        base.ManagedUpdate();
 
         // 描画の前処理。
         if (_spriteRenderer.color.a < 1.0f)

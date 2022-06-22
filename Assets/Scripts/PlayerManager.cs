@@ -43,7 +43,7 @@ public class PlayerManager : MoverManager<Player, PlayerController, PlayerID>
         return new Player(go, id);
     }
 
-    protected override bool idEquals(PlayerID id1, PlayerID id2)
+    protected override bool equal(PlayerID id1, PlayerID id2)
     {
         return id1 == id2;
     }
