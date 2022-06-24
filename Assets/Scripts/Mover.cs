@@ -16,8 +16,8 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
     // HACK: ベクトルではなく複素数で管理するべきか？
     protected Vector2 _velocity = Vector2.zero;  // 速度。角度と速さの組のみ、或いは速度のみを保有すれば十分だが、計算コストの観点から両方保有する。
     private const float MovingThreshold = 80 * 80;  // Rigidbody2D.MovePositionを使うか否かの基準。値自体は当てずっぽう。
-    private float _angle = 0.5f * Mathf.PI;  // 速度を極座標表示したときの角度。単位はラジアン。
-    private float _speed = 0.0f;  // 速度を極座標表示したときの大きさ（速さ）。単位はドット毎フレーム。
+    private float _angle = 90f;  // 速度を極座標表示したときの角度。単位は度数法を用いる。
+    private float _speed = 0f;   // 速度を極座標表示したときの大きさ（速さ）。単位はドット毎フレーム。
 
     public Vector2 Position
     {
@@ -40,7 +40,7 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
             if (_speed != 0.0f)
                 _velocity *= value / _speed;
             else
-                _velocity.Set(value * Mathf.Cos(_angle), value * Mathf.Sin(_angle));
+                _velocity.Set(value * Mathf.Cos(_angle * Mathf.Deg2Rad), value * Mathf.Sin(_angle * Mathf.Deg2Rad));
             _speed = value;
         }
     }
@@ -49,8 +49,8 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
     {
         get { return _angle; }
         set {
-            value = Mathf.Repeat(value, 2f * Mathf.PI);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
-            _velocity = Quaternion.Euler(0.0f, 0.0f, (value - _angle) * Mathf.Rad2Deg) * _velocity;  // HACK: 複素数を使えばもっと簡単に書ける。
+            value = Mathf.Repeat(value, 360f);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
+            _velocity = Quaternion.Euler(0f, 0f, value - _angle) * _velocity;  // HACK: 複素数を使えばもっと簡単に書ける。
             _angle = value;
         }
     }

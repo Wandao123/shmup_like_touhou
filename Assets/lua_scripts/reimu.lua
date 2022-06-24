@@ -48,14 +48,14 @@ end
 -- 自機の移動。復帰との兼ね合い（復帰中は入力を受け付けない）から、Playerクラス内で処理できない。
 local function Move()
 	-- 三角関数は計算時間が掛かるため、ループ内では使わない。また、座標系の依存性を極力減らすため、画面端を表す定数を使う。
-	local East = math.atan2(ScreenRight.y, ScreenRight.x)
-	local Northeast = math.atan2(ScreenTop.y + ScreenRight.y, ScreenTop.x + ScreenRight.x)
-	local North = math.atan2(ScreenTop.y, ScreenTop.x)
-	local Northwest = math.atan2(ScreenTop.y + ScreenLeft.y, ScreenTop.x + ScreenLeft.x)
-	local West = math.atan2(ScreenLeft.y, ScreenLeft.x)
-	local Southwest = math.atan2(ScreenBottom.y + ScreenLeft.y, ScreenBottom.x + ScreenLeft.x)
-	local South = math.atan2(ScreenBottom.y, ScreenBottom.x)
-	local Southeast = math.atan2(ScreenBottom.y + ScreenRight.y, ScreenBottom.x + ScreenRight.x)
+	local East = math.atan2(ScreenRight.y, ScreenRight.x) * stg.Rad2Deg
+	local Northeast = math.atan2(ScreenTop.y + ScreenRight.y, ScreenTop.x + ScreenRight.x) * stg.Rad2Deg
+	local North = math.atan2(ScreenTop.y, ScreenTop.x) * stg.Rad2Deg
+	local Northwest = math.atan2(ScreenTop.y + ScreenLeft.y, ScreenTop.x + ScreenLeft.x) * stg.Rad2Deg
+	local West = math.atan2(ScreenLeft.y, ScreenLeft.x) * stg.Rad2Deg
+	local Southwest = math.atan2(ScreenBottom.y + ScreenLeft.y, ScreenBottom.x + ScreenLeft.x) * stg.Rad2Deg
+	local South = math.atan2(ScreenBottom.y, ScreenBottom.x) * stg.Rad2Deg
+	local Southeast = math.atan2(ScreenBottom.y + ScreenRight.y, ScreenBottom.x + ScreenRight.x) * stg.Rad2Deg
 	while true do
 		if GetKey(CommandID.Rightward) and GetKey(CommandID.Forward) then
 			player.Angle = Northeast
@@ -97,8 +97,8 @@ end
 local function Shoot()  -- 霊夢だと、当たり判定を中心から移動させているため、敵に近づきすぎると当たらなくなるバグあり。
 	while true do
 		if GetKey(CommandID.Shot) then
-			GeneratePlayerBullet(parameters.NormalShot, player.Position.x - 12, player.Position.y, parameters.BulletSpeed, math.pi / 2)
-			GeneratePlayerBullet(parameters.NormalShot, player.Position.x + 12, player.Position.y, parameters.BulletSpeed, math.pi / 2)
+			GeneratePlayerBullet(parameters.NormalShot, player.Position.x - 12, player.Position.y, parameters.BulletSpeed, 90)
+			GeneratePlayerBullet(parameters.NormalShot, player.Position.x + 12, player.Position.y, parameters.BulletSpeed, 90)
 			--GenerateEffect(EffectID.PlayerShotSound)
 			stg:Wait(parameters.ShotDelayFrames)
 		end

@@ -1,8 +1,12 @@
 -- 共有する関数群。
 local stg = {}
 
+-- 定数。
+stg.Deg2Rad = math.pi / 180.0
+stg.Rad2Deg = 180.0 / math.pi
+
 -- 符号関数。xが正のとき+1を、負のとき-1を、0のとき0を返す。
-function sign(x)
+function Sign(x)
 	return x > 0 and 1 or x < 0 and -1 or 0
 end  
 
@@ -57,7 +61,7 @@ end
 -- 或るオブジェクトから或るオブジェクトへの方向。第1引数を始点、第2引数を終点とする。
 function stg:CalcAngleBetween(obj1, obj2)
 	local relative = obj2.Position - obj1.Position
-	return math.atan2(relative.y, relative.x)
+	return math.atan2(relative.y, relative.x) * stg.Rad2Deg
 end
 
 return stg

@@ -224,7 +224,7 @@ public class ScriptManager : IManagedBehaviour
                 var velocity = _inputActions.Player.Move.ReadValue<Vector2>();
                 _player.SlowMode = _inputActions.Player.Slow.IsPressed();
                 _player.Speed = Math.Sign(velocity.sqrMagnitude);
-                _player.Angle = Mathf.Atan2(velocity.y, velocity.x);
+                _player.Angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
                 yield return null;
             }
         }
@@ -235,8 +235,8 @@ public class ScriptManager : IManagedBehaviour
             {
                 if (_inputActions.Player.Shot.IsPressed())
                 {
-                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
-                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 0.5f * Mathf.PI);
+                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 90f);
+                    _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 90f);
                     //GenerateEffect
                     yield return wait(ShotDelayFrames);
                 }
@@ -277,9 +277,9 @@ public class ScriptManager : IManagedBehaviour
     private IEnumerator stageScript()
     {
         var smallRedFairy = _gameDirector.GenerateObject(EnemyID.SmallRedFairy, new Vector2(_gameDirector.ScreenBottomLeft.x * 0.5f, _gameDirector.ScreenTopRight.y));
-        smallRedFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
+        smallRedFairy.Spawned(1.0f, -90f, 15);
         var smallBlueFairy = _gameDirector.GenerateObject(EnemyID.SmallBlueFairy, new Vector2(_gameDirector.ScreenTopRight.x * 0.5f, _gameDirector.ScreenTopRight.y));
-        smallBlueFairy.Spawned(1.0f, -0.5f * Mathf.PI, 15);
+        smallBlueFairy.Spawned(1.0f, -90f, 15);
         yield return wait(120);
         for (var i = 0; i <= 360; i++)
         {
@@ -287,13 +287,13 @@ public class ScriptManager : IManagedBehaviour
             {
                 if (smallRedFairy.IsEnabled())
                     _gameDirector.GenerateObject(BulletID.ScaleRedBullet, smallRedFairy.Position)
-                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x));
+                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallRedFairy.Position.y, _player.Position.x - smallRedFairy.Position.x) * Mathf.Rad2Deg);
                 if (smallBlueFairy.IsEnabled())
                     _gameDirector.GenerateObject(BulletID.ScaleBlueBullet, smallBlueFairy.Position)
-                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x));
+                    .Shot(2.0f, Mathf.Atan2(_player.Position.y - smallBlueFairy.Position.y, _player.Position.x - smallBlueFairy.Position.x) * Mathf.Rad2Deg);
             }
-            smallRedFairy.Angle += Mathf.Deg2Rad;
-            smallBlueFairy.Angle -= Mathf.Deg2Rad;
+            smallRedFairy.Angle += 1f;
+            smallBlueFairy.Angle -= 1f;
             yield return null;
         }
         smallRedFairy.Speed = 0.0f;

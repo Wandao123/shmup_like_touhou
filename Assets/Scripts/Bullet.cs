@@ -17,14 +17,14 @@ public abstract class BulletController : MoverController
         get { return base.Angle; }
         set {
             base.Angle = value;
-            // 進行方向に対して、元の画像は +PI/2 の向きが正位置。よって、画像の回転角は -PI/2 される。
+            // 進行方向に対して、元の画像は +90 の向きが正位置。よって、画像の回転角は -90 される。
             if (_rigid2D.simulated)
                 if (value > RotatingThreshold)
-                    _rigid2D.rotation = (this.Angle - 0.5f * Mathf.PI) * Mathf.Rad2Deg;
+                    _rigid2D.rotation = this.Angle - 90f;
                 else
-                    _rigid2D.MoveRotation((this.Angle - 0.5f * Mathf.PI) * Mathf.Rad2Deg);
+                    _rigid2D.MoveRotation(this.Angle - 90f);
             else
-                transform.rotation = Quaternion.Euler(0.0f, 0.0f, (this.Angle - 0.5f * Mathf.PI) * Mathf.Rad2Deg);
+                transform.rotation = Quaternion.Euler(0.0f, 0.0f, this.Angle - 90f);
         }
     }
 }

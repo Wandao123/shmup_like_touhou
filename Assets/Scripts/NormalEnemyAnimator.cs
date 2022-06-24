@@ -38,21 +38,21 @@ public class NormalEnemyAnimator : SpriteAnimator
         const int NumSlice = 3;
         if (_physicalState.Speed > 0.0)
         {  // 30度ずつの領域に分けて、画像を切り換える。
-            if (_physicalState.Angle == Mathf.PI / 2.0f)
+            if (_physicalState.Angle == 90f)
                 return _clips[0, (countedFrames / DelayFrames) % NumSlice];  // どう設定するのが適切なのか？
-            else if (_physicalState.Angle > Mathf.PI * 6.0f / 12.0f && _physicalState.Angle < Mathf.PI * 13.0f / 12.0f)
+            else if (_physicalState.Angle > 90f && _physicalState.Angle < 195f)
                 return _clips[1, 2];
-            else if (_physicalState.Angle > Mathf.PI * 13.0f / 12.0f && _physicalState.Angle <= Mathf.PI * 15.0f / 12.0f)
+            else if (_physicalState.Angle > 195f && _physicalState.Angle <= 225f)
                 return _clips[1, 1];
-            else if (_physicalState.Angle > Mathf.PI * 15.0f / 12.0f && _physicalState.Angle <= Mathf.PI * 17.0f / 12.0f)
+            else if (_physicalState.Angle > 225f && _physicalState.Angle <= 255f)
                 return _clips[1, 0];
-            else if (_physicalState.Angle >= Mathf.PI * 17.0f / 12.0f && _physicalState.Angle <= Mathf.PI * 19.0f / 12.0f)
+            else if (_physicalState.Angle >= 255f && _physicalState.Angle <= 285f)
                 return _clips[0, (countedFrames / DelayFrames) % NumSlice];
-            else if (_physicalState.Angle >= Mathf.PI * 19.0f / 12.0f && _physicalState.Angle < Mathf.PI * 21.0f / 12.0f)
+            else if (_physicalState.Angle >= 285f && _physicalState.Angle < 315f)
                 return _clips[2, 0];
-            else if (_physicalState.Angle >= Mathf.PI * 21.0f / 12.0f && _physicalState.Angle < Mathf.PI * 23.0f / 12.0f)
+            else if (_physicalState.Angle >= 315f && _physicalState.Angle < 345f)
                 return _clips[2, 1];
-            else
+            else  // if (_physicalState.Angle >= 345f && _physicalState.Angle < 360f)
                 return _clips[2, 2];
         }
         else

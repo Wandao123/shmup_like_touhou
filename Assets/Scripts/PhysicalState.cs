@@ -7,5 +7,5 @@ public interface IPhysicalState
 {
     Vector2 Position { get; set; }
     float Speed { get; set; }  // 単位：ドット毎フレーム
-    float Angle { get; set; }  // x軸を基準とした角度。時計回りの方向を正とする。
+    float Angle { get; set; }  // x軸を基準とした角度。時計回りの方向を正とする。単位：度。
 }

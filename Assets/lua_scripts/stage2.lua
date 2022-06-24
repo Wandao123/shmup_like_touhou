@@ -1,24 +1,24 @@
 local stage = {}
 
-local stg = require('scripts.stg')
+local stg = require('stg')
 
 -- 真っ直ぐ降りてきて、自機狙いの分裂弾を放つ敵。
 -- enemyColor: 敵の色; initPosX: 初期位置.
 local function Fission(enemyColor, initPosX)
-	local enemy = stg:CreateEnemy(enemyColor, initPosX, 0, 1.5, math.pi / 2, 80)
+	local enemy = stg:CreateEnemy(enemyColor, initPosX, 0, 1.5, 90, 80)
 	stg:Wait(90)
 	enemy.Speed = 0
 	stg:Wait(5)
 	local bulletColor = (enemyColor == EnemyID.SmallBlue) and BulletID.MiddleBlue or BulletID.MiddleRed
 	for i = 1, 8 do
-		local bullet = GenerateBullet(bulletColor, enemy, 6, math.pi / 2)
+		local bullet = GenerateBullet(bulletColor, enemy, 6, 90)
 		stg:Wait(10)
 		if bullet ~= nil then
 			bullet:Erase()
-			local angle = math.pi / 2 - math.atan(GetPlayer().PosX - bullet.PosX, GetPlayer().PosY - bullet.PosY)  -- 自機の方向。
-			GenerateBullet(bulletColor, bullet.PosX, bullet.PosY, 6, angle + math.pi / 6)
+			local angle = 90.0 - math.atan(GetPlayer().PosX - bullet.PosX, GetPlayer().PosY - bullet.PosY) * stg.Rad2Deg  -- 自機の方向。
+			GenerateBullet(bulletColor, bullet.PosX, bullet.PosY, 6, angle + 30.0)
 			GenerateBullet(bulletColor, bullet.PosX, bullet.PosY, 6, angle)
-			GenerateBullet(bulletColor, bullet.PosX, bullet.PosY, 6, angle - math.pi / 6)
+			GenerateBullet(bulletColor, bullet.PosX, bullet.PosY, 6, angle - 30.0)
 			GenerateEffect(EffectID.EnemyShotSound)
 		end
 		stg:Wait(15)
@@ -26,7 +26,7 @@ local function Fission(enemyColor, initPosX)
 	local dir = (initPosX < ScreenWidth / 2) and 1 or -1  -- 初期位置が左寄りなら右向きに、右寄りなら左向きに進む。
 	enemy.Speed = 3
 	for i = 0, 5 do
-		enemy.Angle = math.pi / 2 - dir * i * math.pi / 6
+		enemy.Angle = 90 - dir * i * 30
 		stg:Wait(3)
 	end
 end
@@ -37,7 +37,7 @@ local function Revenge(enemyColor, initPosY, speed)
 	local initPosX, angle
 	if speed < 0 then
 		initPosX = ScreenWidth
-		angle = math.pi
+		angle = 180
 	else
 		initPosX = 0
 		angle = 0
@@ -49,7 +49,7 @@ local function Revenge(enemyColor, initPosY, speed)
 	local bulletColor = (enemyColor == EnemyID.SmallBlue) and BulletID.RiceBlue or BulletID.RiceRed
 	local max = math.random(10)
 	for n = 1, max do
-		GenerateBullet(bulletColor, enemy.PosX, enemy.PosY, 4, math.pi * math.random())
+		GenerateBullet(bulletColor, enemy.PosX, enemy.PosY, 4, 180 * math.random())
 		GenerateEffect(EffectID.EnemyShotSound)
 	end
 end

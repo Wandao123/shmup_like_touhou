@@ -22,7 +22,7 @@ end
 -- id: 敵のID; initPosX: 初期位置; speed: 速さ; radius: 曲がる際に描く円の半径; dir: 曲がる方向（正負）; delay: ショットの間隔.
 local function Curve(id, initPosX, speed, radius, dir, delay)
 	dir = dir / math.abs(dir)
-	local angle = math.pi * 3 / 2
+	local angle = 270.0
 	local enemy = stg:CreateEnemy(id, initPosX, ScreenTop.y, speed, angle, 8)
 	coroutine.yield()
 	if id == EnemyID.SmallRedFairy then
@@ -32,13 +32,13 @@ local function Curve(id, initPosX, speed, radius, dir, delay)
 	end
 	stg:Wait(90)
 	-- 1フレームで進む長さ＝speed。これと円の半径を二辺とする二等辺三角形に対して、余弦定理を適用する。
-	local diffAngle = math.acos(1.0 - 0.5 * speed ^ 2 / radius ^ 2)
+	local diffAngle = math.acos(1.0 - 0.5 * speed ^ 2 / radius ^ 2) * stg.Rad2Deg
 	angle = angle + dir * diffAngle / 2  -- 曲がり始めはキャラの初期角度も考慮する。
 	repeat
 		enemy.Angle = angle
 		angle = angle + dir * diffAngle  -- 曲がっている途中は正確にこの値だけずれてゆく。
 		coroutine.yield()
-	until (dir >= 0) and (angle > 2 * math.pi) or (angle < math.pi)  -- 三項演算子
+	until (dir >= 0) and (angle > 360.0) or (angle < 180.0)  -- 三項演算子
 end
 
 -- 真っ直ぐ降りてきて、全方位弾を発射してから引き返す敵。
@@ -46,11 +46,11 @@ end
 local function AllDirection(initPosX, ways)
 	local enemyColor = (ways % 2 == 0) and EnemyID.SmallBlueFairy or EnemyID.SmallRedFairy  -- 偶数弾なら青、奇数弾なら赤。
 	local bulletColor = (ways % 2 == 0) and BulletID.SmallBlueBullet or BulletID.SmallRedBullet
-	local enemy = stg:CreateEnemy(enemyColor, initPosX, ScreenTop.y, 1.5, -math.pi / 2, 24)
+	local enemy = stg:CreateEnemy(enemyColor, initPosX, ScreenTop.y, 1.5, -90, 24)
 	stg:Wait(100)
 	enemy.Speed = 0
 	stg:Wait(5)
-	local diffAngle = 2 * math.pi / ways
+	local diffAngle = 360.0 / ways
 	local startingAngle = 0
 	if ways % 2 == 0 then
 		-- 自機の方向から diffAngle / 2 だけずれた方向。
@@ -77,7 +77,7 @@ local function AllDirection(initPosX, ways)
 	local dir = (initPosX > ScreenCenter.x) and 1 or -1  -- 初期位置が左寄りなら右向きに、右寄りなら左向きに進む。
 	enemy.Speed = 3
 	for i = 0, 5 do
-		enemy.Angle = -math.pi / 2 + dir * i * math.pi / 6
+		enemy.Angle = -90.0 + dir * i * 30
 		stg:Wait(3)
 	end
 end

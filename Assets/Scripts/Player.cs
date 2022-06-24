@@ -22,15 +22,15 @@ public abstract class PlayerController : MoverController, IPlayerPhysicalState
     {
         get { return base.Angle; }
         set {
-            value = 0.25f * Mathf.PI * toCardinalOrOrdinalDirectionsArea(value);
+            value = 45f * toCardinalOrOrdinalDirectionsArea(value);
             base.Angle = value;
         }
     }
 
-    // -pi / 8 [rad] を基準に円を8等分したとき、渡された角度がどの区間に属するか。
+    // -22.5° を基準に円を8等分したとき、角度angleがどの区間に属するか。
     protected uint toCardinalOrOrdinalDirectionsArea(float angle)
     {
-        return (uint)System.Math.Truncate(Mathf.Repeat(angle + 0.125f * Mathf.PI, 2f * Mathf.PI) * 4.0f / Mathf.PI);
+        return (uint)System.Math.Truncate(Mathf.Repeat(angle + 22.5f, 360f) / 45f);
     }
 }
 
@@ -56,7 +56,7 @@ public class Player : Mover<PlayerController, PlayerID>, IInvincibility, IPlayer
         if (_collisionHandler.HitPoint <= 0)
             return;
         _activity.Spawned();
-        this.Angle = 0.5f * Mathf.PI;
+        this.Angle = 90f;
         this.Speed = 0.0f;
         var spriteRenderer = _controller.GetComponent<SpriteRenderer>();  // 単なる無敵状態と区別するために、復活の際には半透明にする。
         var color = spriteRenderer.color;
