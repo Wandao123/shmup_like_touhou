@@ -52,9 +52,9 @@ public class PlayerCharacterAnimator : SpriteAnimator
         int level = 0;              // 左右に何フレーム進んでいるか表すフラグ。-(DelayFrames * NumSlice - 1) .. DelayFrames * NumSlice - 1 の範囲を動く。
         return (int countedFrames) =>
         {
-            if (_physicalState.Velocity.x < 0.0)
+            if (_physicalState.Speed > 0.0f && (_physicalState.Angle > 0.625f * Mathf.PI && _physicalState.Angle < 1.375f * Mathf.PI))  // x軸負の向きに移動している場合。
                 level = Mathf.Max(level - 1, -(DelayFrames * NumSlice - 1));
-            else if (_physicalState.Velocity.x > 0.0)
+            else if (_physicalState.Speed > 0.0f && (_physicalState.Angle < 0.375 * Mathf.PI || _physicalState.Angle > 1.625f * Mathf.PI))  // x軸正の向きに移動している場合。
                 level = Mathf.Min(level + 1, DelayFrames * NumSlice - 1);
             else
                 level = (level != 0) ? (level - level / Mathf.Abs(level)) : 0;

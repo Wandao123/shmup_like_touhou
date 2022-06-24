@@ -33,11 +33,6 @@ public class PlayerManager : MoverManager<Player, PlayerController, PlayerID>
         // 予めオブジェクトを生成しておく場合はここに記述。
     }
 
-    public Player GetPlayer()
-    {
-        return _pool.FirstOrDefault(pooledObject => pooledObject.mover is Player).mover;
-    }
-
     protected override Player makeWrapper(GameObject go, PlayerID id)
     {
         return new Player(go, id);

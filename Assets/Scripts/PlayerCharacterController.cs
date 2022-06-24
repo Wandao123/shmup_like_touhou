@@ -11,10 +11,10 @@ public class PlayerCharacterController : PlayerController
     private float _lowSpeed;
     private Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ縮めた座標。
 
-    public override Vector2 Velocity
+    public override float Speed
     {
-        get => base.Velocity;
-        set => base.Velocity = value.normalized * (SlowMode ? _lowSpeed : _highSpeed);
+        get => base.Speed;
+        set => base.Speed = System.Math.Sign(value) * (SlowMode ? _lowSpeed : _highSpeed);
     }
 
     protected override void Awake()
@@ -31,10 +31,10 @@ public class PlayerCharacterController : PlayerController
         base.ManagedFixedUpdate();
 
         // 移動制限。画面外に出ないように、Moverで代入した速度を上書きする（三角関数の計算でずれるという理由もある）。この制限は速度を変化させた場合のみに適用され、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
-        if (this.Velocity == Vector2.zero)
+        if (_velocity == Vector2.zero)
             return;
-        var nextPosition = this.Position + this.Velocity;
-        var velocity = this.Velocity;
+        var nextPosition = this.Position + this._velocity;
+        var velocity = this._velocity;
         if (nextPosition.x < ScreenMinimum.x)
             velocity.x = ScreenMinimum.x - this.Position.x;
         else if (nextPosition.x > ScreenMaximum.x)

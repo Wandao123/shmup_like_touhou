@@ -47,22 +47,45 @@ end
 
 -- 自機の移動。復帰との兼ね合い（復帰中は入力を受け付けない）から、Playerクラス内で処理できない。
 local function Move()
+	-- 三角関数は計算時間が掛かるため、ループ内では使わない。また、座標系の依存性を極力減らすため、画面端を表す定数を使う。
+	local East = math.atan2(ScreenRight.y, ScreenRight.x)
+	local Northeast = math.atan2(ScreenTop.y + ScreenRight.y, ScreenTop.x + ScreenRight.x)
+	local North = math.atan2(ScreenTop.y, ScreenTop.x)
+	local Northwest = math.atan2(ScreenTop.y + ScreenLeft.y, ScreenTop.x + ScreenLeft.x)
+	local West = math.atan2(ScreenLeft.y, ScreenLeft.x)
+	local Southwest = math.atan2(ScreenBottom.y + ScreenLeft.y, ScreenBottom.x + ScreenLeft.x)
+	local South = math.atan2(ScreenBottom.y, ScreenBottom.x)
+	local Southeast = math.atan2(ScreenBottom.y + ScreenRight.y, ScreenBottom.x + ScreenRight.x)
 	while true do
-		local dir = Vector2.__new()
-		if GetKey(CommandID.Leftward) then
-			dir.x = ScreenLeft.x
-		end
-		if GetKey(CommandID.Rightward) then
-			dir.x = ScreenRight.x
-		end
-		if GetKey(CommandID.Forward) then
-			dir.y = ScreenTop.y
-		end
-		if GetKey(CommandID.Backward) then
-			dir.y = ScreenBottom.y
+		if GetKey(CommandID.Rightward) and GetKey(CommandID.Forward) then
+			player.Angle = Northeast
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Forward) then
+			player.Angle = Northwest
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Backward) then
+			player.Angle = Southeast
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Rightward) and GetKey(CommandID.Backward) then
+			player.Angle = Southwest
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Rightward) then
+			player.Angle = East
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Forward) then
+			player.Angle = North
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) then
+			player.Angle = West
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Backward) then
+			player.Angle = South
+			player.Speed = 1.0
+		else
+			player.Angle = North
+			player.Speed = 0.0
 		end
 		player.SlowMode = GetKey(CommandID.Slow)
-		player.Velocity = dir
 		for i = 1, #options do
 			options[i].Position = player.Position + parameters.OptionAlignment[i]
 		end
@@ -92,6 +115,7 @@ local function Down()
 			--GenerateEffect(EffectID.DefetedPlayer, player.PosX, player.PosY)
 			life = player.HitPoint
 		end
+		return life
 	end
 end
 
@@ -111,11 +135,11 @@ function script:Run()
 			end
 		end
 		coroutine.yield()
-		status, values = pcall(detectDown)  -- 被弾した直後に実行したい。
+		status, life = pcall(detectDown)  -- 被弾した直後に実行したい。
 		if not status then
 			io.stderr:write('Error: ' + values + '\n')
 		end
-	until false
+	until life == 0
 end
 
 function script:GetPlayer()

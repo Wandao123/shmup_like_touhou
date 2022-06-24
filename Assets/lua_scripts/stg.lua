@@ -1,6 +1,11 @@
 -- 共有する関数群。
 local stg = {}
 
+-- 符号関数。xが正のとき+1を、負のとき-1を、0のとき0を返す。
+function sign(x)
+	return x > 0 and 1 or x < 0 and -1 or 0
+end  
+
 -- 指定されたフレーム数だけ待つ。
 -- frames: 待機するフレーム数.
 -- func: 待機中に実行する関数.
