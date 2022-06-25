@@ -13,12 +13,18 @@ using UnityEngine.AddressableAssets;
 public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysicalState
 {
     protected Rigidbody2D _rigid2D;
-    // HACK: ベクトルではなく複素数で管理するべきか？
-    protected Vector2 _velocity = Vector2.zero;  // 速度。角度と速さの組のみ、或いは速度のみを保有すれば十分だが、計算コストの観点から両方保有する。
+    protected System.Numerics.Complex _velocity = System.Numerics.Complex.Zero;
     private const float MovingThreshold = 80 * 80;  // Rigidbody2D.MovePositionを使うか否かの基準。値自体は当てずっぽう。
-    private float _angle = 90f;  // 速度を極座標表示したときの角度。単位は度数法を用いる。
-    private float _speed = 0f;   // 速度を極座標表示したときの大きさ（速さ）。単位はドット毎フレーム。
 
+    /// <summary>速度を極座標表示したときの角度。単位は度数法を用いる。</summary>
+    /// <remark>0度から360度に正規化される。</remark>
+    public virtual float Angle
+    {
+        get => (float)_velocity.Phase * Mathf.Rad2Deg;
+        set => _velocity *= System.Numerics.Complex.FromPolarCoordinates(1, value * Mathf.Deg2Rad);
+    }
+
+    /// <summary>オブジェクトの位置。</summary>
     public Vector2 Position
     {
         get { return transform.position; }
@@ -33,31 +39,32 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
         }
     }
 
+    /// <summary>速度を極座標表示したときの大きさ（速さ）。単位はドット毎フレーム。</summary>
+    /// <remark>0を代入すると、角度の情報が失われる。</remark>
     public virtual float Speed
     {
-        get { return _speed; }
-        set { 
-            if (_speed != 0.0f)
-                _velocity *= value / _speed;
+        get => (float)_velocity.Magnitude;
+        set {
+            if (_velocity != System.Numerics.Complex.Zero)
+                _velocity *= value / _velocity.Magnitude;
             else
-                _velocity.Set(value * Mathf.Cos(_angle * Mathf.Deg2Rad), value * Mathf.Sin(_angle * Mathf.Deg2Rad));
-            _speed = value;
+                _velocity = value;
         }
     }
 
-    public virtual float Angle
+    /// <summary>オブジェクトの速度。</summary>
+    /// <remark>呼ぶ度にオブジェクトを生成するので、効率が悪い可能性がある。</remark>
+    public Vector2 Velocity
     {
-        get { return _angle; }
-        set {
-            value = Mathf.Repeat(value, 360f);  // 負の値が渡されても、0 <= angle < 2 pi になるように変換する。
-            _velocity = Quaternion.Euler(0f, 0f, value - _angle) * _velocity;  // HACK: 複素数を使えばもっと簡単に書ける。
-            _angle = value;
-        }
+        get => new Vector2((float)_velocity.Real, (float)_velocity.Imaginary);
+        set => _velocity = new System.Numerics.Complex(value.x, value.y);
     }
 
     public virtual void ManagedFixedUpdate()
     {
-        _rigid2D.velocity = _velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        //Debug.Log(_velocity);
+        //_rigid2D.velocity.Set((float)_velocity.Real / Time.fixedDeltaTime, (float)_velocity.Imaginary / Time.fixedDeltaTime);  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        _rigid2D.velocity = this.Velocity / Time.fixedDeltaTime;
     }
 
     public void ManagedUpdate() {}
@@ -97,9 +104,10 @@ public abstract class Mover<TController, MoverID> : IActivity, IPhysicalState, I
         _id = id;
     }
 
+    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
     public Vector2 Position { get => _controller.Position; set => _controller.Position = value; }
     public float Speed { get => _controller.Speed; set => _controller.Speed = value; }
-    public float Angle { get => _controller.Angle; set => _controller.Angle = value; }
+    public Vector2 Velocity { get => _controller.Velocity; set => _controller.Velocity = value; }
     public int Damage { get => _collisionHandler.Damage; }
     public int HitPoint { get => _collisionHandler.HitPoint; set => _collisionHandler.HitPoint = value; }
     public MoverID ID { get => _id; }

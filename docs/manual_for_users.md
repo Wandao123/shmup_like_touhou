@@ -196,6 +196,9 @@
     <dt>double <i>Object</i>.Speed property</dt>
     <dd>オブジェクトの速さを表します。単位はドット毎フレームです。</dd>
     <!-- -->
+    <dt>Vector2 <i>Object</i>.Velocity property</dt>
+    <dd>オブジェクトの速度を表します。単位はドット毎フレームです。</dd>
+    <!-- -->
     <dt>void <i>Object</i>:Erase(void)</dt>
     <dd>オブジェクトを消去（無効に）します。</dd>
     <!-- -->
