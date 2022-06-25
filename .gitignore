@@ -70,6 +70,7 @@ crashlytics-build.properties
 # Additional settings
 /build
 /build-IL2CPP
+/[Aa]ssets/AddressableAssetsData/link.xml*
 /[Aa]ssets/Plugins/GitHub*
 /[Aa]ssets/Plugins/MoonSharp/*
 /[Aa]ssets/Plugins/WSA/*
