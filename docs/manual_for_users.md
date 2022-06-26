@@ -4,7 +4,7 @@
 
 ## 仕様
 
-- エンジンは最初にmain.luaファイルのMain関数を読み込みます。
+- エンジンはUnityのインスペクタに指定されたファイルを読み込み、その中のMain関数を実行します。
 - 全てのコルーチンとMain関数が終了していればタイトル画面に遷移します。
 - オブジェクトが有効であるとき、オブジェクトの状態の更新と描画を行います。
 - Unityの仕様に合わせて、座標系は画面右向きをx軸の正、画面上向きをy軸の正とします。それに伴って、x軸を基準とした反時計回りの方向を角度の正の向きと定めます。
@@ -111,7 +111,7 @@
 ### 生成関数
 
 <dl>
-    <dt>Bullet GenerateBullet(BulletID id, double posX, double posY, double speed, double angle)</dt>
+    <dt>Bullet GenerateBullet(BulletID id, float posX, float posY, float speed, float angle)</dt>
     <dd>敵弾オブジェクトを初期状態に従って生成します。</dd>
     <dd>
         <ol>
@@ -124,7 +124,7 @@
         </ol>
     </dd>
     <!-- -->
-    <dt>Enemy GenerateEffect(EnemyID id, double posX = 0.e0, double posY = 0.e0)</dt>
+    <dt>Enemy GenerateEffect(EnemyID id, float posX = 0.e0, float posY = 0.e0)</dt>
     <dd><i>未実装</i></dd>
     <dd>エフェクトオブジェクトを指定の位置に生成します。</dd>
     <dd>
@@ -136,7 +136,7 @@
         </ol>
     </dd>
     <!-- -->
-    <dt>Enemy GenerateEnemy(EnemyID id, double posX, double posY, double speed, double angle, int hitPoint)</dt>
+    <dt>Enemy GenerateEnemy(EnemyID id, float posX, float posY, float speed, float angle, int hitPoint)</dt>
     <dd>敵オブジェクトを初期状態に従って生成します。</dd>
     <dd>
         <ol>
@@ -150,7 +150,7 @@
         </ol>
     </dd>
     <!-- -->
-    <dt>Player GeneratePlayer(PlayerID id, double posX, double posY)</dt>
+    <dt>Player GeneratePlayer(PlayerID id, float posX, float posY)</dt>
     <dd>自機オブジェクトを初期状態に従って生成します。</dd>
     <dd>
         <ol>
@@ -161,7 +161,7 @@
         </ol>
     </dd>
     <!-- -->
-    <dt>Bullet GeneratePlayerBullet(BulletID id, double posX, double posY, double speed, double angle)</dt>
+    <dt>Bullet GeneratePlayerBullet(BulletID id, float posX, float posY, float speed, float angle)</dt>
     <dd>自弾オブジェクトを初期状態に従って生成します。</dd>
     <dd>
         <ol>
@@ -178,7 +178,7 @@
 ### 弾・敵・自機オブジェクトで共通の関数
 
 <dl>
-    <dt>double <i>Object</i>.Angle property</dt>
+    <dt>float <i>Object</i>.Angle property</dt>
     <dd>オブジェクトのx軸に対する回転角を表します。単位は度です。</dd>
     <!-- -->
     <dt>int <i>Object</i>.Damage property (read only)</dt>
@@ -193,11 +193,11 @@
     <dt>Vector2 <i>Object</i>.Position property</dt>
     <dd>オブジェクトの位置の座標を取得します。</dd>
     <!-- -->
-    <dt>double <i>Object</i>.Speed property</dt>
+    <dt>float <i>Object</i>.Speed property</dt>
     <dd>オブジェクトの速さを表します。単位はドット毎フレームです。</dd>
-    <!-- -->
+    <!--
     <dt>Vector2 <i>Object</i>.Velocity property</dt>
-    <dd>オブジェクトの速度を表します。単位はドット毎フレームです。</dd>
+    <dd>オブジェクトの速度を表します。単位はドット毎フレームです。</dd>-->
     <!-- -->
     <dt>void <i>Object</i>:Erase(void)</dt>
     <dd>オブジェクトを消去（無効に）します。</dd>

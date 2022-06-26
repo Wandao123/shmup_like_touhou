@@ -47,45 +47,24 @@ end
 
 -- 自機の移動。復帰との兼ね合い（復帰中は入力を受け付けない）から、Playerクラス内で処理できない。
 local function Move()
-	-- 三角関数は計算時間が掛かるため、ループ内では使わない。また、座標系の依存性を極力減らすため、画面端を表す定数を使う。
-	local East = math.atan2(ScreenRight.y, ScreenRight.x) * stg.Rad2Deg
-	local Northeast = math.atan2(ScreenTop.y + ScreenRight.y, ScreenTop.x + ScreenRight.x) * stg.Rad2Deg
-	local North = math.atan2(ScreenTop.y, ScreenTop.x) * stg.Rad2Deg
-	local Northwest = math.atan2(ScreenTop.y + ScreenLeft.y, ScreenTop.x + ScreenLeft.x) * stg.Rad2Deg
-	local West = math.atan2(ScreenLeft.y, ScreenLeft.x) * stg.Rad2Deg
-	local Southwest = math.atan2(ScreenBottom.y + ScreenLeft.y, ScreenBottom.x + ScreenLeft.x) * stg.Rad2Deg
-	local South = math.atan2(ScreenBottom.y, ScreenBottom.x) * stg.Rad2Deg
-	local Southeast = math.atan2(ScreenBottom.y + ScreenRight.y, ScreenBottom.x + ScreenRight.x) * stg.Rad2Deg
+	local direction = Vector2.__new()
 	while true do
-		if GetKey(CommandID.Rightward) and GetKey(CommandID.Forward) then
-			player.Angle = Northeast
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Forward) then
-			player.Angle = Northwest
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Backward) then
-			player.Angle = Southeast
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Rightward) and GetKey(CommandID.Backward) then
-			player.Angle = Southwest
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Rightward) then
-			player.Angle = East
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Forward) then
-			player.Angle = North
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Leftward) then
-			player.Angle = West
-			player.Speed = 1.0
-		elseif GetKey(CommandID.Backward) then
-			player.Angle = South
-			player.Speed = 1.0
-		else
-			player.Angle = North
-			player.Speed = 0.0
+		direction = Vector2.zero
+		if GetKey(CommandID.Rightward) then
+			direction.x = 1
 		end
+		if GetKey(CommandID.Forward) then
+			direction.y = 1
+		end
+		if GetKey(CommandID.Leftward) then
+			direction.x = -1
+		end
+		if GetKey(CommandID.Backward) then
+			direction.y = -1
+		end
+		player.Angle = math.atan2(direction.y, direction.x) * stg.Rad2Deg  -- 三角関数は計算時間が掛かるため、本来はループ内で使いたくない。
 		player.SlowMode = GetKey(CommandID.Slow)
+		player.Speed = direction.sqrMagnitude
 		for i = 1, #options do
 			options[i].Position = player.Position + parameters.OptionAlignment[i]
 		end

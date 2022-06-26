@@ -11,6 +11,15 @@ public class PlayerCharacterController : PlayerController
     private float _lowSpeed;
     private Vector2 ScreenMinimum, ScreenMaximum;  // 画面の左下の座標と右下の座標から、画像の大きさの半分だけ縮めた座標。
 
+    public override float Angle
+    {
+        get { return base.Angle; }
+        set {
+            value = 45f * toCardinalOrOrdinalDirectionsArea(value);
+            base.Angle = value;
+        }
+    }
+
     public override float Speed
     {
         get => base.Speed;
@@ -28,13 +37,13 @@ public class PlayerCharacterController : PlayerController
 
     public override void ManagedFixedUpdate()
     {
-        base.ManagedFixedUpdate();
+        base.ManagedFixedUpdate();  // 後で纏めて呼び出すと、_velocityと (_angle, _speed) がずれて、挙動が変になる。
 
         // 移動制限。画面外に出ないように、Moverで代入した速度を上書きする（三角関数の計算でずれるという理由もある）。この制限は速度を変化させた場合のみに適用され、位置を直接変える場合は制限しないことに注意。復活処理との兼ね合いのためである。
-        if (_velocity == System.Numerics.Complex.Zero)
+        if (this._velocity == Vector2.zero)
             return;
-        var nextPosition = this.Position + this.Velocity;
-        var velocity = this.Velocity;
+        var nextPosition = this.Position + this._velocity;
+        var velocity = this._velocity;
         if (nextPosition.x < ScreenMinimum.x)
             velocity.x = ScreenMinimum.x - this.Position.x;
         else if (nextPosition.x > ScreenMaximum.x)
@@ -44,5 +53,11 @@ public class PlayerCharacterController : PlayerController
         else if (nextPosition.y > ScreenMaximum.y)
             velocity.y = ScreenMaximum.y - this.Position.y;
         _rigid2D.velocity = velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+    }
+
+    // -22.5° を基準に円を8等分したとき、角度angleがどの区間に属するか。
+    protected uint toCardinalOrOrdinalDirectionsArea(float angle)
+    {
+        return (uint)System.Math.Truncate(Mathf.Repeat(angle + 22.5f, 360f) / 45f);
     }
 }

@@ -42,11 +42,11 @@ public class GameDirector : MonoBehaviour, IGameDirector
         _playerManager = new PlayerManager();
         _enemyBulletManager = new BulletManager();
         _playerBulletManager = new BulletManager();
-        _scriptManager = new ScriptManager(this);
     }
 
     private void Start()
     {
+        _scriptManager = new ScriptManager(this);
     }
 
     private void FixedUpdate()

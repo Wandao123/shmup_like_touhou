@@ -223,8 +223,8 @@ public class ScriptManager : IManagedBehaviour
             {
                 var velocity = _inputActions.Player.Move.ReadValue<Vector2>();
                 _player.SlowMode = _inputActions.Player.Slow.IsPressed();
-                _player.Speed = Math.Sign(velocity.sqrMagnitude);
                 _player.Angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
+                _player.Speed = velocity.sqrMagnitude;
                 yield return null;
             }
         }

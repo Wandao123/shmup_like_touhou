@@ -17,21 +17,6 @@ public interface IPlayerPhysicalState : IPhysicalState
 public abstract class PlayerController : MoverController, IPlayerPhysicalState
 {
     public bool SlowMode { get; set; } = false;  // 低速移動か否か。
-
-    public override float Angle
-    {
-        get { return base.Angle; }
-        set {
-            value = 45f * toCardinalOrOrdinalDirectionsArea(value);
-            base.Angle = value;
-        }
-    }
-
-    // -22.5° を基準に円を8等分したとき、角度angleがどの区間に属するか。
-    protected uint toCardinalOrOrdinalDirectionsArea(float angle)
-    {
-        return (uint)System.Math.Truncate(Mathf.Repeat(angle + 22.5f, 360f) / 45f);
-    }
 }
 
 // Luaのためのラッパークラス。
