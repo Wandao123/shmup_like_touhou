@@ -47,24 +47,37 @@ end
 
 -- 自機の移動。復帰との兼ね合い（復帰中は入力を受け付けない）から、Playerクラス内で処理できない。
 local function Move()
-	local direction = Vector2.__new()
 	while true do
-		direction = Vector2.zero
-		if GetKey(CommandID.Rightward) then
-			direction.x = 1
-		end
-		if GetKey(CommandID.Forward) then
-			direction.y = 1
-		end
-		if GetKey(CommandID.Leftward) then
-			direction.x = -1
-		end
-		if GetKey(CommandID.Backward) then
-			direction.y = -1
-		end
-		player.Angle = math.atan2(direction.y, direction.x) * stg.Rad2Deg  -- 三角関数は計算時間が掛かるため、本来はループ内で使いたくない。
 		player.SlowMode = GetKey(CommandID.Slow)
-		player.Speed = direction.sqrMagnitude
+		-- atan2を使えばもっと短く書けるが、三角関数は計算時間が掛かるため、ループ内では使いたくない。
+		if GetKey(CommandID.Rightward) and GetKey(CommandID.Forward) then
+			player.Angle = 45
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Forward) then
+			player.Angle = 135
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) and GetKey(CommandID.Backward) then
+			player.Angle = 225
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Rightward) and GetKey(CommandID.Backward) then
+			player.Angle = 315
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Rightward) then
+			player.Angle = 0
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Forward) then
+			player.Angle = 90
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Leftward) then
+			player.Angle = 180
+			player.Speed = 1.0
+		elseif GetKey(CommandID.Backward) then
+			player.Angle = 270
+			player.Speed = 1.0
+		else
+			player.Angle = 90
+			player.Speed = 0.0
+		end
 		for i = 1, #options do
 			options[i].Position = player.Position + parameters.OptionAlignment[i]
 		end
