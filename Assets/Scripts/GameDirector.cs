@@ -20,6 +20,10 @@ public interface IGameDirector
 
 public class GameDirector : MonoBehaviour, IGameDirector
 {
+    private const int ScreenWidth = 640;
+    private const int ScreenHeight = 480;
+
+    private FrameRateManager _frameRateManager;
     private ScriptManager _scriptManager;
     private EnemyManager _enemyManager;
     private PlayerManager _playerManager;
@@ -28,7 +32,13 @@ public class GameDirector : MonoBehaviour, IGameDirector
     [SerializeField]
     private string _mainScriptFilename = "Assets/lua_scripts/main.lua";
     [SerializeField]
-    private PreloadedBullets _preloadedBullets;
+    private PreloadedEnemies _preloadedEnemies;
+    [SerializeField]
+    private PreloadedPlayers _preloadedPlayers;
+    [SerializeField]
+    private PreloadedBullets _preloadedEnemyBullets;
+    [SerializeField]
+    private PreloadedBullets _preloadedPlayerBullets;
 
     public string MainScriptFilename { get => _mainScriptFilename; }
     // 本来はreadonlyな変数にしたいところだが、Unityではコンストラクタが呼べないため、プロパティで読み出す。
@@ -38,10 +48,12 @@ public class GameDirector : MonoBehaviour, IGameDirector
 
     private void Awake()
     {
-        _enemyManager = new EnemyManager();
-        _playerManager = new PlayerManager();
-        _enemyBulletManager = new BulletManager();
-        _playerBulletManager = new BulletManager();
+        Screen.SetResolution(ScreenWidth, ScreenHeight, false);
+        _frameRateManager = GetComponent<FrameRateManager>();
+        _enemyManager = new EnemyManager(this.transform, _preloadedEnemies.GetTable());
+        _playerManager = new PlayerManager(this.transform, _preloadedPlayers.GetTable());
+        _enemyBulletManager = new BulletManager(this.transform, _preloadedEnemyBullets.GetTable());
+        _playerBulletManager = new BulletManager(this.transform, _preloadedPlayerBullets.GetTable());
     }
 
     private void Start()
@@ -69,6 +81,23 @@ public class GameDirector : MonoBehaviour, IGameDirector
     private void OnDestroy()
     {
         
+    }
+
+    private void OnGUI()
+    {
+        //GUI.Box(new Rect(0, 25, 250, 25), "# of enabled objects " + (_enemyManager.ObjectCount + _playerManager.ObjectCount + _enemyBulletManager.ObjectCount + _playerBulletManager.ObjectCount).ToString() + "/" + transform.childCount.ToString());
+        var children = transform.childCount;
+        var enemies = _enemyManager.ObjectCount;
+        var players = _playerManager.ObjectCount;
+        var enemyBullets = _enemyBulletManager.ObjectCount;
+        var playerBullets = _playerBulletManager.ObjectCount;
+        using (new GUILayout.VerticalScope())
+        {
+            GUILayout.Box("FPS " + _frameRateManager.AverageOfFPS.ToString());
+            GUILayout.Box(string.Format("# of enabled objects {0:D" + ((int)Mathf.Log10(children) + 1).ToString() + "}/{1}",
+                enemies + players + enemyBullets + playerBullets, children));
+            GUILayout.FlexibleSpace();
+        }
     }
 
     // 条件分岐するぐらいなら、初めからクラスを分割するべきか？

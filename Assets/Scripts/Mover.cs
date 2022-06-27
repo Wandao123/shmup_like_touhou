@@ -62,19 +62,6 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
         }
     }
 
-    /// <summary>オブジェクトの速度。</summary>
-    /// <remark>セッターは呼ぶ度に平方根や三角関数を計算するので、効率が悪い。</remark>
-    // 自機オブジェクトのために用意したものの、効率が悪いので、やはりAngleとSpeedのみを使う。
-    /*public virtual Vector2 Velocity
-    {
-        get { return _velocity; }
-        set {
-            _velocity = value;
-            _angle = Mathf.Atan2(value.y, value.x);
-            _speed = value.magnitude;
-        }
-    }*/
-
     public virtual void ManagedFixedUpdate()
     {
         _rigid2D.velocity = _velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
@@ -139,7 +126,24 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
     where TController : MoverController
     where MoverID : Enum
 {
-    protected ICollection<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)> _pool = new List<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)>();
+    protected ICollection<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)> _pool;
+    private Transform _gameDirector;
+
+    public MoverManager(in Transform gameDirector, in Dictionary<MoverID, uint> preloadedObjectsTable)
+    {
+        _pool = new List<(TMover mover, Func<bool> isEnabled, Action fixedUpdate, Action update)>();
+        _gameDirector = gameDirector;
+
+        // 指定されたオブジェクトを予め生成。
+        foreach (var pair in preloadedObjectsTable)
+            for (var i = 1; i <= pair.Value; i++)
+                generateNewObject(pair.Key, new Vector2(0, 300));
+    }
+
+    public int ObjectCount
+    {
+        get => _pool.Count(pooledObject => pooledObject.isEnabled());
+    }
 
     public ICollection<TMover> ObjectsList
     {
@@ -169,25 +173,7 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
             first.mover.Position = position;
             return first.mover;
         }
-
-        // 新しいオブジェクトの生成。
-        var prefab = Addressables.LoadAssetAsync<GameObject>(id.ToString()).WaitForCompletion();
-        var newObject = GameObject.Instantiate(prefab, position, Quaternion.identity) as GameObject;
-        //prefab.transform.parent = transform;
-        newObject.name = prefab.name;
-        //var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, transform).WaitForCompletion();
-        //newObject.name = id.ToString();
-        var mover = makeWrapper(newObject, id);
-        Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
-        Action fixedUpdate = default;
-        Action update = default;
-        foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
-        {
-            fixedUpdate += behaviour.ManagedFixedUpdate;
-            update += behaviour.ManagedUpdate;
-        }
-        _pool.Add((mover, isEnabled, fixedUpdate, update));
-        return mover;
+        return generateNewObject(id, position);
     }
 
     public void ManagedFixedUpdate()
@@ -209,6 +195,27 @@ public abstract class MoverManager<TMover, TController, MoverID> : IManagedBehav
 
     protected abstract TMover makeWrapper(GameObject go, MoverID id);  // new制約を使うと引数が渡せない上に遅くなるので、子クラスで生成用関数を定義。
     protected abstract bool equal(MoverID id1, MoverID id2);  // ジェネリックスの関係で等号が使えないので、子クラスに任せる。
+
+    /// <summary>Moverオブジェクトを新たに生成する。そのインスタンスはGameDirectorの子オブジェクトにされる。</summary>
+    /// <param name="id">複製するプレハブに対応する列挙名</param>
+    /// <param name="position">生成する位置</param>
+    /// <returns>生成されたGameObjectにアタッチされているControllerクラス</returns>
+    protected TMover generateNewObject(MoverID id, in Vector2 position)
+    {
+        var newObject = Addressables.InstantiateAsync(id.ToString(), position, Quaternion.identity, _gameDirector).WaitForCompletion();
+        newObject.name = id.ToString();
+        var mover = makeWrapper(newObject, id);
+        Func<bool> isEnabled = newObject.GetComponent<IActivity>().IsEnabled;
+        Action fixedUpdate = default;
+        Action update = default;
+        foreach (var behaviour in newObject.GetComponents<IManagedBehaviour>())
+        {
+            fixedUpdate += behaviour.ManagedFixedUpdate;
+            update += behaviour.ManagedUpdate;
+        }
+        _pool.Add((mover, isEnabled, fixedUpdate, update));
+        return mover;
+    }
 }
 
 // 参考：https://qiita.com/k_yanase/items/fb64ccfe1c14567a907d

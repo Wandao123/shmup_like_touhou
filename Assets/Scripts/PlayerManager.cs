@@ -16,13 +16,22 @@ public enum PlayerID
     SanaeOption
 }
 
+[System.Serializable]
+public class PreloadedPlayers : Serialize.TableBase<PlayerID, uint, PreloadedPlayersPair> {}
+
+[System.Serializable]
+public class PreloadedPlayersPair : Serialize.KeyAndValue<PlayerID, uint>
+{
+    public PreloadedPlayersPair(PlayerID id, uint count) : base(id, count) {}
+}
+
 public class PlayerManager : MoverManager<Player, PlayerController, PlayerID>
 {
     private Vector2Int _characterSize;  // 本来はreadonlyにしたいところだが、MonoBehaviourを継承したクラスではコンストラクタが呼べないため、工夫が必要。
 
     public Vector2Int CharacterSize { get => _characterSize; }
 
-    public PlayerManager()
+    public PlayerManager(in Transform gameDirector, in Dictionary<PlayerID, uint> preloadedObjectsTable) : base(gameDirector, preloadedObjectsTable)
     {
         var prefab = Addressables.LoadAssetAsync<GameObject>(((PlayerID)0).ToString()).WaitForCompletion();  // 自機のスプライトのサイズは何れも同じことを要請。
         Vector2 size = prefab.GetComponent<SpriteRenderer>().bounds.size;

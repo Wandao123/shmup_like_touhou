@@ -8,9 +8,18 @@ public enum EnemyID
     SmallBlueFairy
 };
 
+[System.Serializable]
+public class PreloadedEnemies : Serialize.TableBase<EnemyID, uint, PreloadedEnemiesPair> {}
+
+[System.Serializable]
+public class PreloadedEnemiesPair : Serialize.KeyAndValue<EnemyID, uint>
+{
+    public PreloadedEnemiesPair(EnemyID id, uint count) : base(id, count) {}
+}
+
 public class EnemyManager : MoverManager<Enemy, EnemyController, EnemyID>
 {
-    public EnemyManager()
+    public EnemyManager(in Transform gameDirector, in Dictionary<EnemyID, uint> preloadedObjectsTable) : base(gameDirector, preloadedObjectsTable)
     {
         // 予めオブジェクトを生成しておく場合はここに記述。
     }

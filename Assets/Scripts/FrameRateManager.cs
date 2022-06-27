@@ -1,47 +1,39 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class FrameRateManager : MonoBehaviour
 {
-    private const int ScreenWidth = 640;
-    private const int ScreenHeight = 480;
     private const int FPS = 60;
-    private GameObject frameRate;
-    private uint countedFrames;
-    private float timeBeforeFPS;
+    private Text _frameRate;
+    private float _averageOfFPS = 0.0f;
+    private uint _countedFrames = 0;
+    private float _timeBeforeFPS = 0.0f;
 
-    // Start is called before the first frame update
-    void Start()
+    public float AverageOfFPS
     {
-        this.frameRate = GameObject.Find("FrameRate");
-        countedFrames = 0;
-        timeBeforeFPS = 0.0f;
+        get => _averageOfFPS;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
+    {
+        Application.targetFrameRate = FPS;
+        _frameRate = GameObject.Find("FrameRate").GetComponent<Text>();
+    }
+
+    private void Update()
     {
         // 参考：https://www.create-forever.games/framerate/
-        float currentTime = Time.realtimeSinceStartup;
-        ++countedFrames;
-        if (countedFrames % FPS == 0)
+        float _currentTime = Time.realtimeSinceStartup;
+        ++_countedFrames;
+        if (_countedFrames % FPS == 0)
         {
-            float averageOfFPS = 0.0f;
-            var temp = (currentTime - timeBeforeFPS) / FPS;
+            var temp = (_currentTime - _timeBeforeFPS) / FPS;
             if (temp != 0.0f)
-                averageOfFPS = 1.0f / temp;
+                _averageOfFPS = 1.0f / temp;
             else
-                averageOfFPS = 0.0f;
-            timeBeforeFPS = currentTime;
-            this.frameRate.GetComponent<Text>().text = "FPS " + averageOfFPS.ToString("f3");
+                _averageOfFPS = 0.0f;
+            _timeBeforeFPS = _currentTime;
+            _frameRate.text = "FPS " + _averageOfFPS.ToString("f1");
         }
-    }
-
-    void Awake()
-    {
-        Screen.SetResolution(ScreenWidth, ScreenHeight, false);
-        Application.targetFrameRate = FPS;
     }
 }

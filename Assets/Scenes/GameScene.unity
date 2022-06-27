@@ -472,7 +472,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 736410892c8ce3741b13c37efcc3b429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preloadedBullets:
+  _mainScriptFilename: Assets/lua_scripts/main.lua
+  _preloadedEnemies:
+    list:
+    - Key: 0
+      Value: 10
+    - Key: 1
+      Value: 10
+  _preloadedPlayers:
+    list: []
+  _preloadedEnemyBullets:
+    list:
+    - Key: 4
+      Value: 1100
+    - Key: 5
+      Value: 1100
+  _preloadedPlayerBullets:
     list: []
 --- !u!1 &1165671383
 GameObject:

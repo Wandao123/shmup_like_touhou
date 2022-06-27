@@ -36,7 +36,7 @@ public class PreloadedBulletsPair : Serialize.KeyAndValue<BulletID, uint>
 
 public class BulletManager : MoverManager<Bullet, BulletController, BulletID>
 {
-    public BulletManager()
+    public BulletManager(in Transform gameDirector, in Dictionary<BulletID, uint> preloadedObjectsTable) : base(gameDirector, preloadedObjectsTable)
     {
         // 予めオブジェクトを生成しておく場合はここに記述。
         /*var bulletsList = new List<Bullet>();
