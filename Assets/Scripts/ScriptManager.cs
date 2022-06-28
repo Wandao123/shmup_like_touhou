@@ -81,7 +81,7 @@ public class ScriptManager : IManagedBehaviour
 
         // Luaのスクリプトを開始。
         _script.DoFile(_gameDirector.MainScriptFilename);
-        runLuaCoroutine(_script.Globals.Get("Main"));
+        startLuaCoroutine(_script.Globals.Get("Main"));
     }
 
     public void ManagedFixedUpdate() {}
@@ -166,22 +166,31 @@ public class ScriptManager : IManagedBehaviour
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 
-        AppliedFunc<DynValue, DynValue, DynValue> luaStartCoroutineWithArgs =
-        (func, args) => runLuaCoroutine(func, args);
-        _script.Globals["StartCoroutineWithArgs"] = luaStartCoroutineWithArgs;
+        AppliedFunc<DynValue, DynValue, DynValue> startLuaCoroutineWithArgs =
+        (func, args) => this.startLuaCoroutine(func, args);
+        _script.Globals["StartCoroutineWithArgs"] = startLuaCoroutineWithArgs;
         _script.DoString(@"
             function StartCoroutine(func, ...)
-                StartCoroutineWithArgs(func, {...})
+                return StartCoroutineWithArgs(func, {...})
             end
         ");
+
+        Action<DynValue> stopLuaCoroutine =
+        (co) => this.stopLuaCoroutine(co);
+        _script.Globals["StopCoroutine"] = stopLuaCoroutine;
     }
 
-    private DynValue runLuaCoroutine(DynValue func, params DynValue[] args)
+    private DynValue startLuaCoroutine(DynValue func, params DynValue[] args)
     {
         var co = _script.CreateCoroutine(func);
         co.Coroutine.Resume(args);  // TODO: エラー処理の方法？
         _tasksList.Add(co);
         return co;
+    }
+
+    private void stopLuaCoroutine(DynValue co)
+    {
+        _tasksList.Remove(co);
     }
 
     //**************** Luaを使わずにC#のみでゲーム・ロジックを記述する方法 ****************

@@ -289,31 +289,30 @@
         </ol>
     </dd>
     <!-- -->
-    <dt>list::iterator StartCoroutine(func) [overloaded]</dt>
+    <dt>Thread StartCoroutine(func) [overloaded]</dt>
     <dd>毎フレーム実行するコルーチンfuncを登録します。Luaのresume関数と異なり、1フレーム毎に自動的に実行されます。この関数を呼び出した時点でfuncは1回実行されます。funcには引数を渡しません。</dd>
     <dd>
         <ol>
-            <li><b>返り値: </b>登録したタスク（スレッドとコルーチンの組）へのイテレータ</li>
+            <li><b>返り値: </b>登録したコルーチンに対するスレッド</li>
             <li><b>func: </b>Luaの関数</li>
         </ol>
     </dd>
     <!-- -->
-    <dt>list::iterator StartCoroutine(func, arg1, arg2, ...) [overloaded]</dt>
+    <dt>Thread StartCoroutine(func, arg1, arg2, ...) [overloaded]</dt>
     <dd>毎フレーム実行するコルーチンfuncを登録します。Luaのresume関数と異なり、1フレーム毎に自動的に実行されます。この関数を呼び出した時点でfuncは1回実行されます。funcには arg1, arg2, ... の形式で引数を渡します。</dd>
     <dd>
         <ol>
-            <li><b>返り値: </b>登録したタスク（スレッドとコルーチンの組）へのイテレータ</li>
+            <li><b>返り値: </b>登録したコルーチンに対するスレッド</li>
             <li><b>func: </b>Luaの関数</li>
             <li><b>(arg1, arg2, ...): </b>引数リスト</li>
         </ol>
     </dd>
     <!-- -->
-    <dt>void StopCoroutine(task)</dt>
-    <dd><i>未実装</i></dd>
+    <dt>void StopCoroutine(thread)</dt>
     <dd>指定したコルーチンを停止します。</dd>
     <dd>
         <ol>
-            <li><b>task: </b>停止するタスク（スレッドとコルーチンの組）へのイテレータ</li>
+            <li><b>thread: </b>停止するスレッド</li>
         </ol>
     </dd>
 </dl>

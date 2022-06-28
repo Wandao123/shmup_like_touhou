@@ -52,7 +52,6 @@ public class PlayerCharacterController : PlayerController
             velocity.y = ScreenMinimum.y - this.Position.y;
         else if (nextPosition.y > ScreenMaximum.y)
             velocity.y = ScreenMaximum.y - this.Position.y;
-        //Position = Position + _velocity;
         _rigid2D.velocity = velocity / Time.deltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
