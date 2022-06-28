@@ -85,7 +85,6 @@ public class GameDirector : MonoBehaviour, IGameDirector
 
     private void OnGUI()
     {
-        //GUI.Box(new Rect(0, 25, 250, 25), "# of enabled objects " + (_enemyManager.ObjectCount + _playerManager.ObjectCount + _enemyBulletManager.ObjectCount + _playerBulletManager.ObjectCount).ToString() + "/" + transform.childCount.ToString());
         var children = transform.childCount;
         var enemies = _enemyManager.ObjectCount;
         var players = _playerManager.ObjectCount;
@@ -96,6 +95,7 @@ public class GameDirector : MonoBehaviour, IGameDirector
             GUILayout.Box("FPS " + _frameRateManager.AverageOfFPS.ToString());
             GUILayout.Box(string.Format("# of enabled objects {0:D" + ((int)Mathf.Log10(children) + 1).ToString() + "}/{1}",
                 enemies + players + enemyBullets + playerBullets, children));
+            GUILayout.Box($"# of tasks {_scriptManager.TaskCount}");
             GUILayout.FlexibleSpace();
         }
     }

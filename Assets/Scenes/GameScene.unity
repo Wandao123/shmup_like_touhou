@@ -484,9 +484,13 @@ MonoBehaviour:
   _preloadedEnemyBullets:
     list:
     - Key: 4
-      Value: 1100
+      Value: 100
     - Key: 5
-      Value: 1100
+      Value: 100
+    - Key: 6
+      Value: 100
+    - Key: 7
+      Value: 100
   _preloadedPlayerBullets:
     list: []
 --- !u!1 &1165671383

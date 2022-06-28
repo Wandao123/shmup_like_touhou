@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections;
+//using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -36,6 +37,12 @@ public class ScriptManager : IManagedBehaviour
     private ShmupInputActions _inputActions;
     private Dictionary<CommandID, Func<bool>> _mapping;
     private Script _script;
+    private List<DynValue> _tasksList;  // 各フレームで実行するLuaのコルーチンのリスト。DynValueではなくMoonSharp.Interpreter.Coroutineを要素にすると、エラーが発生する。
+
+    public int TaskCount
+    {
+        get => _tasksList.Count;
+    }
 
     // 参考：http://tawamuredays.blog.fc2.com/blog-entry-218.html
     public delegate Range AppliedFunc<Name, Args, Range>(Name name, params Args[] args);
@@ -61,6 +68,7 @@ public class ScriptManager : IManagedBehaviour
 
         // Lua (MoonSharp) の設定。
         _script = new Script();
+        _tasksList = new List<DynValue>();
         _script.Options.ScriptLoader = new MoonSharp.Interpreter.REPL.ReplInterpreterScriptLoader();
         ((ScriptLoaderBase)_script.Options.ScriptLoader).ModulePaths = ScriptLoaderBase.UnpackStringPaths("Assets/lua_scripts/?;Assets/lua_scripts/?.lua");
         _script.Options.DebugPrint = s => _gameDirector.Print(s);
@@ -75,14 +83,18 @@ public class ScriptManager : IManagedBehaviour
 
         // Luaのスクリプトを開始。
         _script.DoFile(_gameDirector.MainScriptFilename);
-        _gameDirector.StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
+        //_gameDirector.StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
+        runLuaCoroutine(_script.Globals.Get("Main"));
     }
 
     public void ManagedFixedUpdate() {}
 
     public void ManagedUpdate()
     {
-        // TODO: Unityのコルーチンに丸投げせずに、Luaのコルーチンを自前で管理するように変更。
+        //if (_tasksList?.Count > 0)
+        _tasksList.RemoveAll(task => task.Coroutine.State == CoroutineState.Dead);
+        foreach (var task in _tasksList.ToList())  // ToListを施さないと、InvalidOperationExceptionが発生する。
+            task.Coroutine.Resume();
     }
 
     private void registerClasses()
@@ -157,8 +169,10 @@ public class ScriptManager : IManagedBehaviour
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 
-        AppliedFunc<DynValue, DynValue, UnityEngine.Coroutine> luaStartCoroutineWithArgs =
-        (func, args) => _gameDirector.StartCoroutine(runLuaCoroutine(func, args));
+        //AppliedFunc<DynValue, DynValue, UnityEngine.Coroutine> luaStartCoroutineWithArgs =
+        //(func, args) => _gameDirector.StartCoroutine(runLuaCoroutine(func, args));
+        AppliedFunc<DynValue, DynValue, DynValue> luaStartCoroutineWithArgs =
+        (func, args) => runLuaCoroutine(func, args);
         _script.Globals["StartCoroutineWithArgs"] = luaStartCoroutineWithArgs;
         _script.DoString(@"
             function StartCoroutine(func, ...)
@@ -167,7 +181,7 @@ public class ScriptManager : IManagedBehaviour
         ");
     }
 
-    private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)
+    /*private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)
     {
         var co = _script.CreateCoroutine(func).Coroutine;
         while (co.State != CoroutineState.Dead)
@@ -175,6 +189,14 @@ public class ScriptManager : IManagedBehaviour
             co.Resume(args);
             yield return null;
         }
+    }*/
+
+    private DynValue runLuaCoroutine(DynValue func, params DynValue[] args)
+    {
+        var co = _script.CreateCoroutine(func);
+        co.Coroutine.Resume(args);  // TODO: エラー処理の方法？
+        _tasksList.Add(co);
+        return co;
     }
 
     //**************** Luaを使わずにC#のみでゲーム・ロジックを記述する方法 ****************
