@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Collections;
-//using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -83,7 +81,6 @@ public class ScriptManager : IManagedBehaviour
 
         // Luaのスクリプトを開始。
         _script.DoFile(_gameDirector.MainScriptFilename);
-        //_gameDirector.StartCoroutine(runLuaCoroutine(_script.Globals.Get("Main")));
         runLuaCoroutine(_script.Globals.Get("Main"));
     }
 
@@ -169,8 +166,6 @@ public class ScriptManager : IManagedBehaviour
         Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
         _script.Globals["GetKey"] = getKey;
 
-        //AppliedFunc<DynValue, DynValue, UnityEngine.Coroutine> luaStartCoroutineWithArgs =
-        //(func, args) => _gameDirector.StartCoroutine(runLuaCoroutine(func, args));
         AppliedFunc<DynValue, DynValue, DynValue> luaStartCoroutineWithArgs =
         (func, args) => runLuaCoroutine(func, args);
         _script.Globals["StartCoroutineWithArgs"] = luaStartCoroutineWithArgs;
@@ -180,16 +175,6 @@ public class ScriptManager : IManagedBehaviour
             end
         ");
     }
-
-    /*private IEnumerator runLuaCoroutine(DynValue func, params DynValue[] args)
-    {
-        var co = _script.CreateCoroutine(func).Coroutine;
-        while (co.State != CoroutineState.Dead)
-        {
-            co.Resume(args);
-            yield return null;
-        }
-    }*/
 
     private DynValue runLuaCoroutine(DynValue func, params DynValue[] args)
     {

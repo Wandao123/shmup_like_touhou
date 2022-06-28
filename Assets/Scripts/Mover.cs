@@ -64,7 +64,8 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
 
     public virtual void ManagedFixedUpdate()
     {
-        _rigid2D.velocity = _velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        //Position = Position + _velocity;
+        _rigid2D.velocity = _velocity / Time.deltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
     public void ManagedUpdate() {}

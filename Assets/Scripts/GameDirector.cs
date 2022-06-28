@@ -61,17 +61,13 @@ public class GameDirector : MonoBehaviour, IGameDirector
         _scriptManager = new ScriptManager(this);
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
+        _scriptManager.ManagedUpdate();
         _enemyManager.ManagedFixedUpdate();
         _playerManager.ManagedFixedUpdate();
         _enemyBulletManager.ManagedFixedUpdate();
         _playerBulletManager.ManagedFixedUpdate();
-    }
-
-    private void Update()
-    {
-        _scriptManager.ManagedUpdate();
         _enemyManager.ManagedUpdate();
         _playerManager.ManagedUpdate();
         _enemyBulletManager.ManagedUpdate();

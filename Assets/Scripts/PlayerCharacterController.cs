@@ -52,7 +52,8 @@ public class PlayerCharacterController : PlayerController
             velocity.y = ScreenMinimum.y - this.Position.y;
         else if (nextPosition.y > ScreenMaximum.y)
             velocity.y = ScreenMaximum.y - this.Position.y;
-        _rigid2D.velocity = velocity / Time.fixedDeltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
+        //Position = Position + _velocity;
+        _rigid2D.velocity = velocity / Time.deltaTime;  // 単位：(ドット / フレーム) / (秒 / フレーム) = ドット / 秒
     }
 
     // -22.5° を基準に円を8等分したとき、角度angleがどの区間に属するか。
