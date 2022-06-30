@@ -43,11 +43,10 @@ end
 
 function Main()
 	math.randomseed(os.time())
-	playerTask = StartCoroutine(playerScript.Run)
+	StartCoroutine(playerScript.Run)
 	--TestBenchmark()
 	local stage1 = require('stage1')
 	stage1:Start(playerScript:GetPlayer())
-	StopCoroutine(playerTask)
 	--[[ChangeScene(SceneID.StageClear)
 	local stage2 = require('scripts.stage2')
 	stage2:Start()
