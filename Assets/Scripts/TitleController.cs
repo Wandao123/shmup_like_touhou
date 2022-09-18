@@ -22,7 +22,8 @@ public class TitleController : MonoBehaviour
             SceneDirector sceneDirector = go.GetComponent<SceneDirector>();
             if (sceneDirector != null)
             {
-                sceneDirector.ClearAndChangeSceneTo("GameScene");
+                sceneDirector.Clear();
+                sceneDirector.Push("GameScene");
                 break;
             }
         }

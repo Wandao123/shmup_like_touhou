@@ -10,7 +10,14 @@ public class SceneDirector : MonoBehaviour
 
     private void Awake()
     {
-        ClearAndChangeSceneTo("TitleScene");
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            var scene = SceneManager.GetSceneAt(i);
+            if (scene.name != "RootScene")
+                scenesList.Add(scene);
+        }
+        if (scenesList.IsEmpty)
+            Push("TitleScene");
     }
 
     private IEnumerator clearAllScenes()
@@ -39,10 +46,29 @@ public class SceneDirector : MonoBehaviour
         yield return SceneManager.SetActiveScene(newScene);
     }
 
-    public void ClearAndChangeSceneTo(string sceneName)
+    private IEnumerator removeScene(string sceneName)
+    {
+        var op = SceneManager.UnloadSceneAsync(sceneName);
+        yield return op;
+        yield return Resources.UnloadUnusedAssets();
+    }
+
+    public void Clear()
     {
         StartCoroutine(clearAllScenes());
         scenesList.Clear();
+    }
+
+    public void Push(string sceneName)
+    {
         StartCoroutine(changeSceneTo(sceneName));
+    }
+
+    public void Pop(string sceneName)
+    {
+        StartCoroutine(removeScene(sceneName));
+        Scene removedScene;
+        if (scenesList.TryTake(out removedScene))
+            Debug.LogWarning("Remove a scene is failed.");
     }
 }
