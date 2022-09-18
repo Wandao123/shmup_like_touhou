@@ -4,9 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneDirector : MonoBehaviour
+public interface IChangingSceneListener
 {
-    private ConcurrentBag<Scene> scenesList = new ConcurrentBag<Scene>();
+    void Clear();
+    void Pop(string sceneName);
+    void Push(string sceneName);
+}
+
+public class SceneDirector : MonoBehaviour, IChangingSceneListener
+{
+    private ConcurrentStack<Scene> scenesList = new ConcurrentStack<Scene>();
 
     private void Awake()
     {
@@ -14,7 +21,7 @@ public class SceneDirector : MonoBehaviour
         {
             var scene = SceneManager.GetSceneAt(i);
             if (scene.name != "RootScene")
-                scenesList.Add(scene);
+                scenesList.Push(scene);
         }
         if (scenesList.IsEmpty)
             Push("TitleScene");
@@ -32,17 +39,23 @@ public class SceneDirector : MonoBehaviour
 
     private IEnumerator changeSceneTo(string sceneName)
     {
-        var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        yield return op;
         Scene newScene;
         bool isValid;
         do
         {
             newScene = SceneManager.GetSceneByName(sceneName);
             isValid = newScene.IsValid();
-            yield return isValid;
+            if (isValid)
+            {
+                yield return isValid;
+            }
+            else
+            {
+                var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                yield return op;
+            }
         } while (!isValid);
-        scenesList.Add(newScene);
+        scenesList.Push(newScene);
         yield return SceneManager.SetActiveScene(newScene);
     }
 
@@ -51,6 +64,10 @@ public class SceneDirector : MonoBehaviour
         var op = SceneManager.UnloadSceneAsync(sceneName);
         yield return op;
         yield return Resources.UnloadUnusedAssets();
+        Scene nextScene;
+        var result = scenesList.TryPeek(out nextScene);
+        SceneManager.SetActiveScene(nextScene);
+        yield return result;
     }
 
     public void Clear()
@@ -59,16 +76,16 @@ public class SceneDirector : MonoBehaviour
         scenesList.Clear();
     }
 
-    public void Push(string sceneName)
-    {
-        StartCoroutine(changeSceneTo(sceneName));
-    }
-
     public void Pop(string sceneName)
     {
         StartCoroutine(removeScene(sceneName));
         Scene removedScene;
-        if (scenesList.TryTake(out removedScene))
+        if (scenesList.TryPop(out removedScene))
             Debug.LogWarning("Remove a scene is failed.");
+    }
+
+    public void Push(string sceneName)
+    {
+        StartCoroutine(changeSceneTo(sceneName));
     }
 }

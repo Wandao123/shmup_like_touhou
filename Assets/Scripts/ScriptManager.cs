@@ -6,34 +6,11 @@ using UnityEngine;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
 
-public enum CommandID : int {
-    // メニューで使用。キーの割り当てを変更不可。
-    /*OK,
-    Cancel,
-    Left,
-    Right,
-    Up,
-    Down,*/
-    // ゲーム中で使用。
-    Shot,
-    Bomb,
-    Slow,
-    Skip,
-    Leftward,
-    Rightward,
-    Forward,
-    Backward,
-    Pause,
-    SIZE  // 要素数を取得するためのダミー。
-}
-
 // 参考：https://qiita.com/sevenstartears/items/b8ebd3939211b68fcaa4
 //       https://eims.hatenablog.com/entry/2018/09/25/021420
 public class ScriptManager : IManagedBehaviour
 {
     private IGameDirector _gameDirector;
-    private ShmupInputActions _inputActions;
-    private Dictionary<CommandID, Func<bool>> _mapping;
     private Script _script;
     private List<DynValue> _tasksList;  // 各フレームで実行するLuaのコルーチンのリスト。DynValueではなくMoonSharp.Interpreter.Coroutineを要素にすると、エラーが発生する。
 
@@ -48,21 +25,6 @@ public class ScriptManager : IManagedBehaviour
     public ScriptManager(in IGameDirector gameDirector)
     {
         _gameDirector = gameDirector;
-
-        // 入力関係の初期化。
-        _inputActions = new ShmupInputActions();
-        _inputActions.Enable();
-        _mapping = new Dictionary<CommandID, Func<bool>>() {
-            { CommandID.Shot, _inputActions.Player.Shot.IsPressed },
-            { CommandID.Bomb, _inputActions.Player.Bomb.IsPressed },
-            { CommandID.Slow, _inputActions.Player.Slow.IsPressed },
-            { CommandID.Skip, _inputActions.Player.Skip.IsPressed },
-            { CommandID.Leftward, () => _inputActions.Player.Move.ReadValue<Vector2>().x < 0.0f },
-            { CommandID.Rightward, () => _inputActions.Player.Move.ReadValue<Vector2>().x > 0.0f },
-            { CommandID.Forward, () => _inputActions.Player.Move.ReadValue<Vector2>().y > 0.0f },
-            { CommandID.Backward, () => _inputActions.Player.Move.ReadValue<Vector2>().y < 0.0f },
-            { CommandID.Pause, _inputActions.Player.Pause.IsPressed }
-        };
 
         // Lua (MoonSharp) の設定。
         _script = new Script();
@@ -163,7 +125,7 @@ public class ScriptManager : IManagedBehaviour
         };
         _script.Globals["GeneratePlayer"] = generatePlayer;
 
-        Func<CommandID, bool> getKey = (CommandID id) => _mapping[id]();
+        Func<CommandID, bool> getKey = (CommandID id) => _gameDirector.KeyMapping[id]();
         _script.Globals["GetKey"] = getKey;
 
         AppliedFunc<DynValue, DynValue, DynValue> startLuaCoroutineWithArgs =
@@ -237,8 +199,16 @@ public class ScriptManager : IManagedBehaviour
         {
             while (true)
             {
-                var velocity = _inputActions.Player.Move.ReadValue<Vector2>();
-                _player.SlowMode = _inputActions.Player.Slow.IsPressed();
+                _player.SlowMode = _gameDirector.KeyMapping[CommandID.Slow]();
+                var velocity = Vector2.zero;
+                if (_gameDirector.KeyMapping[CommandID.Rightward]())
+                    velocity.x = 1f;
+                if (_gameDirector.KeyMapping[CommandID.Leftward]())
+                    velocity.x = -1f;
+                if (_gameDirector.KeyMapping[CommandID.Forward]())
+                    velocity.y = 1f;
+                if (_gameDirector.KeyMapping[CommandID.Backward]())
+                    velocity.y = -1f;
                 _player.Angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
                 _player.Speed = velocity.sqrMagnitude;
                 yield return null;
@@ -249,7 +219,7 @@ public class ScriptManager : IManagedBehaviour
         {
             while (true)
             {
-                if (_inputActions.Player.Shot.IsPressed())
+                if (_gameDirector.KeyMapping[CommandID.Shot]())
                 {
                     _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position - new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 90f);
                     _gameDirector.GenerateObject(BulletID.ReimuNormalBullet, _player.Position + new Vector2(12.0f, 0.0f)).Shot(BulletSpeed, 90f);

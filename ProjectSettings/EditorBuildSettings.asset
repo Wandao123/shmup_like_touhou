@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameScene.unity
     guid: 2ee1de548cef1f4429c31abc8d5d1c4d
+  - enabled: 1
+    path: Assets/Scenes/PauseScene.unity
+    guid: f8e6bb8a2dcd85d4baf0c11ea1a5a853
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: bcacf12e8e2899644856a1029594c9a1, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 685c686dab2c90d42a3fddacb0b14f09, type: 2}
