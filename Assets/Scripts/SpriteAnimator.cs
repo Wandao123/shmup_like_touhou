@@ -18,6 +18,8 @@ public abstract class SpriteAnimator : MonoBehaviour, IManagedBehaviour
         _spriteRenderer.enabled = false;
     }
 
+    protected virtual void Start() {}
+
     protected virtual void OnDisable()
     {
         _spriteRenderer.enabled = false;

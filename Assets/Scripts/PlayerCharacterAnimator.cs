@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerCharacterAnimator : SpriteAnimator
 {
     private Sprite[,] _clips;
-    private Func<int, Sprite> _clipFramImageFunc;
+    private Func<int, Sprite> _clipFromImageFunc;
     private IInvincibility _invincibility;
     private IPlayerPhysicalState _physicalState;
 
@@ -16,7 +16,7 @@ public class PlayerCharacterAnimator : SpriteAnimator
         for (var i = 0; i < _clips.GetLength(0); i++)
             for (var j = 0; j < _clips.GetLength(1); j++)
                 _clips[i, j] = spritesList[_clips.GetLength(1) * i + j];
-        _clipFramImageFunc = clipFromImageClosure();
+        _clipFromImageFunc = clipFromImageClosure();
         _invincibility = GetComponent<IInvincibility>();
         _physicalState = GetComponent<IPlayerPhysicalState>();
     }
@@ -41,7 +41,7 @@ public class PlayerCharacterAnimator : SpriteAnimator
 
     protected override Sprite clipFromImage(int countedFrames)
     {
-        return _clipFramImageFunc(countedFrames);
+        return _clipFromImageFunc(countedFrames);
     }
 
     private Func<int, Sprite> clipFromImageClosure()

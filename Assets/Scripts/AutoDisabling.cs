@@ -14,6 +14,10 @@ public class AutoDisabling : MonoBehaviour, IManagedBehaviour
     {
         _activity = GetComponent<IActivity>();
         _physicalState = GetComponent<IPhysicalState>();
+    }
+
+    private void Start()
+    {
         float width = GetComponent<SpriteRenderer>().bounds.size.x;
         float height = GetComponent<SpriteRenderer>().bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) - (new Vector3(width, height, 0) * 0.5f);

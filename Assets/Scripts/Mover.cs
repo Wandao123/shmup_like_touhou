@@ -75,6 +75,8 @@ public abstract class MoverController : MonoBehaviour, IManagedBehaviour, IPhysi
         _rigid2D.simulated = false;
     }
 
+    protected virtual void Start() {}
+
     protected virtual void OnDisable()
     {
         _rigid2D.simulated = false;

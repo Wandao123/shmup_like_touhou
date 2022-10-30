@@ -26,9 +26,9 @@ public class PlayerCharacterController : PlayerController
         set => base.Speed = System.Math.Sign(value) * (SlowMode ? _lowSpeed : _highSpeed);
     }
 
-    protected override void Awake()
+    protected override void Start()
     {
-        base.Awake();
+        base.Start();
         float width = GetComponent<SpriteRenderer>().bounds.size.x;
         float height = GetComponent<SpriteRenderer>().bounds.size.y;
         ScreenMinimum = Camera.main.ViewportToWorldPoint(Vector2.zero) + (new Vector3(width, height, 0) * 0.5f);

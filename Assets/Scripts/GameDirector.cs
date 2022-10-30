@@ -73,6 +73,7 @@ public class GameDirector : MonoBehaviour, IGameDirector
     public Vector2 ScreenBottomLeft { get => Camera.main.ViewportToWorldPoint(Vector2.zero); }
     public Vector2 ScreenTopRight { get => Camera.main.ViewportToWorldPoint(Vector2.one); }
 
+    // オブジェクトのインスタンス化とフィールドの初期化に関わるものはAwakeに記述。
     private void Awake()
     {
         // システムに関わるものの初期化。
@@ -94,17 +95,18 @@ public class GameDirector : MonoBehaviour, IGameDirector
             { CommandID.Pause, _inputActions.Player.Pause.IsPressed }
         };
 
-        // MoverManagerの子オブジェクトの初期化。
+        // ゲーム・オブジェクトを生成するクラスをインスタンス化。
         _enemyManager = new EnemyManager(this.transform, _preloadedEnemies.GetTable());
         _playerManager = new PlayerManager(this.transform, _preloadedPlayers.GetTable());
         _enemyBulletManager = new BulletManager(this.transform, _preloadedEnemyBullets.GetTable());
         _playerBulletManager = new BulletManager(this.transform, _preloadedPlayerBullets.GetTable());
     }
 
+    // 初期状態の設定や遅れて初期化するべきものはStartに記述。
     private void Start()
     {
         _listener = RootSceneAutoLoader.GetListener();
-        _scriptManager = new ScriptManager(this);
+        _scriptManager = new ScriptManager(this);  // 事前に生成するべきオブジェクトが多いため、これは最後に生成する。
     }
 
     private void Update()
