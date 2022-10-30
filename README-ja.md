@@ -35,8 +35,8 @@
 
 ### Unityのバージョン
 
-以下のバージョンでテストしています。
-- 2021.3.6f1
+次のバージョンでビルドしています。
+- 2021.3.10f1
 
 ### 依存ライブラリ
 
@@ -57,7 +57,8 @@
 ### テスト
 
 1. GitHubからソースコードをダウンロードする。
-1. [Unity Hub](https://unity3d.com/jp/get-unity/download)をダウンロードする（それに際してはUnityのユーザー登録をする必要がある）。起動し、メニューの「インストール」から適当なバージョンのUnityをインストールする。
+1. [Unity Hub](https://unity3d.com/jp/get-unity/download)をダウンロード・インストールする（それに際してはUnityのユーザー登録をする必要がある）。
+1. 適当なウェブブラウザから[このページ](https://unity3d.com/get-unity/download/archive)にアクセスし、[該当するバージョン](#unityのバージョン)のUnity Editorの "Unity Hub" ボタンをクリックする。Unity Hubで開くか聞かれるのでそれを許可すると、Unity Hubが立ち上がりモジュール選択画面に遷移する。自分の環境（オペレーティングシステム）に合わせて、対応するモジュールを選択した後、Unity Editorのインストールを行う。
 1. メニューの「プロジェクト」→「リストに追加」から、ダウンロードしたソースコードをUnity Hubの管理下におく。
 1. リストのに追加されたプロジェクト名をクリックすると、Unityが立ち上がる。エラーが発生するが、これは必要なアセットが導入されていないのが原因である。そのまま "safe mode" ボタンを押して起動する。
 1. メニューバーの "Window" → "Asset Store" をクリックして、表示された画面の "Search online" ボタンをクリックする。さもなければ、[Unity Asset Store](https://assetstore.unity.com/)をブラウザで直接開く。
