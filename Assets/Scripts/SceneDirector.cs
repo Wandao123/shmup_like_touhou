@@ -7,32 +7,35 @@ using UnityEngine.SceneManagement;
 public interface IChangingSceneListener
 {
     void Clear();
-    void Pop(string sceneName);
+    void Pop();
     void Push(string sceneName);
 }
 
 public class SceneDirector : MonoBehaviour, IChangingSceneListener
 {
-    private ConcurrentStack<Scene> scenesList = new ConcurrentStack<Scene>();
-
     private void Awake()
     {
+        bool isSceneListEmpty = true;
         for (int i = 0; i < SceneManager.sceneCount; i++)
         {
             var scene = SceneManager.GetSceneAt(i);
             if (scene.name != "RootScene")
-                scenesList.Push(scene);
+                isSceneListEmpty = false;
         }
-        if (scenesList.IsEmpty)
+        if (isSceneListEmpty)
             Push("TitleScene");
     }
 
     private IEnumerator clearAllScenes()
     {
-        foreach (var scene in scenesList)
+        for (int i = SceneManager.sceneCount - 1; i >= 0; i--)
         {
-            var op = SceneManager.UnloadSceneAsync(scene.name);
-            yield return op;
+            var scene = SceneManager.GetSceneAt(i);
+            if (scene.name != "RootScene")
+            {
+                var op = SceneManager.UnloadSceneAsync(scene);
+                yield return op;
+            }
         }
         yield return Resources.UnloadUnusedAssets();
     }
@@ -43,11 +46,12 @@ public class SceneDirector : MonoBehaviour, IChangingSceneListener
         bool isValid;
         do
         {
+            // この初期化や判定の順番を換えると、シーンが二重に読み込まれるなど、意図した挙動にならない。
             newScene = SceneManager.GetSceneByName(sceneName);
             isValid = newScene.IsValid();
             if (isValid)
             {
-                yield return isValid;
+                yield return true;
             }
             else
             {
@@ -55,33 +59,28 @@ public class SceneDirector : MonoBehaviour, IChangingSceneListener
                 yield return op;
             }
         } while (!isValid);
-        scenesList.Push(newScene);
         yield return SceneManager.SetActiveScene(newScene);
     }
 
-    private IEnumerator removeScene(string sceneName)
+    private IEnumerator removeScene()
     {
-        var op = SceneManager.UnloadSceneAsync(sceneName);
+        var index = SceneManager.sceneCount - 1;
+        var op = SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(index--));
         yield return op;
         yield return Resources.UnloadUnusedAssets();
-        Scene nextScene;
-        var result = scenesList.TryPeek(out nextScene);
-        SceneManager.SetActiveScene(nextScene);
+        Scene nextScene = SceneManager.GetSceneAt(index);
+        var result = SceneManager.SetActiveScene(nextScene);
         yield return result;
     }
 
     public void Clear()
     {
         StartCoroutine(clearAllScenes());
-        scenesList.Clear();
     }
 
-    public void Pop(string sceneName)
+    public void Pop()
     {
-        StartCoroutine(removeScene(sceneName));
-        Scene removedScene;
-        if (scenesList.TryPop(out removedScene))
-            Debug.LogWarning("Remove a scene is failed.");
+        StartCoroutine(removeScene());
     }
 
     public void Push(string sceneName)

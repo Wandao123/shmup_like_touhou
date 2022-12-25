@@ -22,7 +22,7 @@ public class PauseDirector : MonoBehaviour
 
     public void OnReturnButtonClicked()
     {
-        _listener.Pop("PauseScene");
+        _listener.Pop();
         Scene rootScene = SceneManager.GetSceneByName("GameScene");
         foreach (var go in rootScene.GetRootGameObjects())
         {
